@@ -56,6 +56,7 @@ connection.onInitialize((params) => {
             hoverProvider: true,
             documentSymbolProvider: true,
             referencesProvider: true,
+            foldingRangeProvider: true,
             completionProvider: {
                 triggerCharacters: [
                     '.', '(', ',', ' ', '=', '+', '-', '*', '/', '<', '>', '!',
@@ -456,6 +457,71 @@ connection.onReferences((params) => __awaiter(void 0, void 0, void 0, function* 
     }
     return results;
 }));
+// ==================
+// Folding Ranges Request Handler
+// ==================
+connection.onFoldingRanges((params) => {
+    const doc = documents.get(params.textDocument.uri);
+    if (!doc)
+        return [];
+    const lines = doc.getText().split(/\r?\n/);
+    const ranges = [];
+    // open keyword -> matching close keyword
+    const blockOpens = {
+        DEF: 'END',
+        DEFFCT: 'ENDFCT',
+        DEFDAT: 'ENDDAT',
+        IF: 'ENDIF',
+        LOOP: 'ENDLOOP',
+        FOR: 'ENDFOR',
+        WHILE: 'ENDWHILE',
+        SWITCH: 'ENDSWITCH',
+        STRUC: 'ENDSTRUC',
+        REPEAT: 'UNTIL',
+    };
+    // Opens must sit at line start (allow leading GLOBAL for DEF*/STRUC).
+    const openRegex = /^\s*(?:GLOBAL\s+)?(DEF|DEFFCT|DEFDAT|IF|LOOP|FOR|WHILE|SWITCH|STRUC|REPEAT)\b/i;
+    // Word boundaries keep END out of ENDIF etc. Longer alternatives listed first defensively.
+    const closeRegex = /\b(ENDFCT|ENDDAT|ENDIF|ENDLOOP|ENDFOR|ENDWHILE|ENDSWITCH|ENDSTRUC|UNTIL|END)\b/i;
+    const blockStack = [];
+    const foldStack = [];
+    for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        // ;FOLD / ;ENDFOLD — KUKA editor folds. Detect before comment-stripping.
+        if (/^\s*;\s*FOLD\b/i.test(raw)) {
+            foldStack.push(i);
+            continue;
+        }
+        if (/^\s*;\s*ENDFOLD\b/i.test(raw)) {
+            const start = foldStack.pop();
+            if (start !== undefined && i > start) {
+                ranges.push({ startLine: start, endLine: i, kind: node_1.FoldingRangeKind.Region });
+            }
+            continue;
+        }
+        const code = raw.split(';')[0];
+        const openMatch = openRegex.exec(code);
+        const openKw = openMatch ? openMatch[1].toUpperCase() : null;
+        const closeMatch = closeRegex.exec(code);
+        const closeKw = closeMatch ? closeMatch[1].toUpperCase() : null;
+        // Same-line open + matching close (one-liner IF/STRUC) — nothing to fold.
+        if (openKw && closeKw && blockOpens[openKw] === closeKw)
+            continue;
+        if (openKw) {
+            blockStack.push({ startLine: i, expectedEnd: blockOpens[openKw] });
+        }
+        else if (closeKw) {
+            const top = blockStack[blockStack.length - 1];
+            if (top && top.expectedEnd === closeKw) {
+                blockStack.pop();
+                if (i > top.startLine) {
+                    ranges.push({ startLine: top.startLine, endLine: i });
+                }
+            }
+        }
+    }
+    return ranges;
+});
 function getAllFunctionDeclarations() {
     return __awaiter(this, void 0, void 0, function* () {
         if (!workspaceRoot)
