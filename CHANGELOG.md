@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.5.0] - 2026-05-07
+### Added
+- Document Symbols / Outline support for `DEF`, `DEFFCT` and `DEFDAT` blocks. Functions and data modules now appear in the Outline view, in Breadcrumbs, and via the symbol picker (Ctrl+Shift+O).
+
+### Fixed
+- `Go to Definition` failed when the symbol was written with a different case than its declaration. KRL is case-insensitive, but variable, struct and function lookups compared names strictly. Now all lookups are case-insensitive, and the jump position is computed correctly even when the file uses a different casing than the call site.
+
+---
+
 ## [1.4.6] - 2025-08-24
 ### Fixed
 - Fix issue with variables that could contain the string "Global" and trigger the PUBLIC DEFDAT error.
