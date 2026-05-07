@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.6.0] - 2026-05-07
+### Added
+- Find All References (`Shift+F12`, right-click → "Find All References" / "Go to References", peek view via `Alt+Shift+F12`). Case-insensitive workspace-wide search across `.src`, `.dat` and `.sub` files. Skips line comments, subvariable accesses (`foo.bar`) and system variables (`$foo`, `#foo`). Honors the LSP `includeDeclaration` flag.
+
+---
+
 ## [1.5.0] - 2026-05-07
 ### Added
 - Document Symbols / Outline support for `DEF`, `DEFFCT` and `DEFDAT` blocks. Functions and data modules now appear in the Outline view, in Breadcrumbs, and via the symbol picker (Ctrl+Shift+O).

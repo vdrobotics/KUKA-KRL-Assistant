@@ -19,6 +19,7 @@ import {
   DocumentSymbolParams,
   SymbolKind,
   Range,
+  ReferenceParams,
 } from 'vscode-languageserver/node';
 
 import {
@@ -112,6 +113,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       hoverProvider: true,
       documentSymbolProvider: true,
+      referencesProvider: true,
       completionProvider: {
         triggerCharacters: [
           '.', '(', ',', ' ', '=', '+', '-', '*', '/', '<', '>', '!',
@@ -546,6 +548,64 @@ connection.onDocumentSymbol((params: DocumentSymbolParams): DocumentSymbol[] => 
   }
 
   return symbols;
+});
+
+
+// ==================
+// References Request Handler (Shift+F12 / Right-click → Find All References)
+// ==================
+connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc || !workspaceRoot) return [];
+
+  const lines = doc.getText().split(/\r?\n/);
+  const lineText = lines[params.position.line];
+  const wordInfo = getWordAtPosition(lineText, params.position.character);
+  if (!wordInfo) return [];
+
+  const name = wordInfo.word;
+  // Skip pure numeric tokens — \w+ matches them but they're never identifiers
+  if (/^\d/.test(name)) return [];
+
+  // KRL is case-insensitive; word boundary keeps "Foo" out of "FooBar"
+  const wordRegex = new RegExp(`\\b${name}\\b`, 'gi');
+  const declLineRegex = /^\s*(GLOBAL\s+)?(DEF|DEFFCT|DEFDAT|STRUC|ENUM|DECL|SIGNAL)\b/i;
+  const includeDeclaration = params.context.includeDeclaration;
+
+  const files = await findSrcFiles(workspaceRoot);
+  const results: Location[] = [];
+
+  for (const filePath of files) {
+    const uri = URI.file(filePath).toString();
+    // Prefer in-memory content so unsaved edits are reflected
+    const openDoc = documents.get(uri);
+    const content = openDoc ? openDoc.getText() : fs.readFileSync(filePath, 'utf8');
+    const fileLines = content.split(/\r?\n/);
+
+    for (let i = 0; i < fileLines.length; i++) {
+      const rawLine = fileLines[i];
+      // Strip line comments before matching
+      const code = rawLine.split(';')[0];
+      const isDeclLine = declLineRegex.test(code);
+      if (isDeclLine && !includeDeclaration) continue;
+
+      wordRegex.lastIndex = 0;
+      let m: RegExpExecArray | null;
+      while ((m = wordRegex.exec(code)) !== null) {
+        const start = m.index;
+        const prev = start > 0 ? code[start - 1] : '';
+        // Skip subvariable accesses (a.foo) and system vars ($foo, #foo)
+        if (prev === '.' || prev === '$' || prev === '#') continue;
+
+        results.push(Location.create(uri, {
+          start: Position.create(i, start),
+          end: Position.create(i, start + name.length),
+        }));
+      }
+    }
+  }
+
+  return results;
 });
 
 

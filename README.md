@@ -7,6 +7,7 @@ A Visual Studio Code extension to help write, understand, and maintain KUKA Robo
 - Syntax highlighting (snippets and color coding)
 - Document Symbols / Outline view for `DEF`, `DEFFCT` and `DEFDAT` blocks (Outline panel, Breadcrumbs, Ctrl+Shift+O)
 - Go to definition for functions and variables (case-insensitive, like KRL itself)
+- Find All References (`Shift+F12`, right-click → "Find All References") for functions, structs and variables across the workspace
 - Hover to view function parameters
 - Warning when a GLOBAL variable is missing a DECL, SIGNAL or STRUC
 - Error when a variable name exceeds KUKA's 24-character limit
