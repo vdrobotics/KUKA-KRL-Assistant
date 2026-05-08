@@ -28,6 +28,25 @@ let variableStructTypes = {};
 let structDefinitions = {};
 let functionsDeclared = [];
 let mergedVariables = [];
+// Server-side validation toggles, pushed by the client via 'custom/setValidationConfig'.
+// Defaults match package.json: all checks on.
+const serverValidationConfig = {
+    defdatPublicGlobalRequired: true,
+    defdatNonPublicGlobalForbidden: true,
+};
+connection.onNotification('custom/setValidationConfig', (cfg) => {
+    if (typeof cfg.defdatPublicGlobalRequired === 'boolean') {
+        serverValidationConfig.defdatPublicGlobalRequired = cfg.defdatPublicGlobalRequired;
+    }
+    if (typeof cfg.defdatNonPublicGlobalForbidden === 'boolean') {
+        serverValidationConfig.defdatNonPublicGlobalForbidden = cfg.defdatNonPublicGlobalForbidden;
+    }
+    // Re-validate all open .dat files so stale diagnostics clear or fresh ones appear immediately.
+    documents.all().forEach(doc => {
+        if (doc.uri.endsWith('.dat'))
+            validateDatFile(doc, connection);
+    });
+});
 const CODE_KEYWORDS = [
     'GLOBAL', 'DEF', 'DEFFCT', 'END', 'ENDFCT', 'RETURN', 'TRIGGER',
     'REAL', 'BOOL', 'DECL', 'IF', 'ELSE', 'ENDIF', 'CONTINUE', 'FOR', 'ENDFOR', 'WHILE',
@@ -713,7 +732,7 @@ function validateDatFile(document, connection) {
             if (!declMatch)
                 continue;
             if (insidePublicDefdat) {
-                if (!/^\s*(?:DECL\s+)?GLOBAL\b/i.test(line)) {
+                if (serverValidationConfig.defdatPublicGlobalRequired && !/^\s*(?:DECL\s+)?GLOBAL\b/i.test(line)) {
                     const newDiagnostic = {
                         severity: node_1.DiagnosticSeverity.Warning,
                         range: {
@@ -729,7 +748,7 @@ function validateDatFile(document, connection) {
                 }
             }
             else {
-                if (/^\s*(?:DECL\s+)?GLOBAL\b/i.test(line)) {
+                if (serverValidationConfig.defdatNonPublicGlobalForbidden && /^\s*(?:DECL\s+)?GLOBAL\b/i.test(line)) {
                     const newDiagnostic = {
                         severity: node_1.DiagnosticSeverity.Error,
                         range: {

@@ -2,7 +2,7 @@
   "name": "kuka-krl-assistant",
   "displayName": "KUKA KRL Assistant",
   "description": "Language features for KUKA KRL",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "publisher": "Alfred",
   "repository": {
     "type": "git",
@@ -43,7 +43,32 @@
         "scopeName": "source.krl",
         "path": "./client/syntaxes/krl.tmLanguage.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "KUKA KRL Assistant",
+      "properties": {
+        "kukaKrl.validation.variableNameLength": {
+          "type": "boolean",
+          "default": true,
+          "description": "Error when a variable name exceeds KUKA's 24-character limit (in DECL/STRUC/SIGNAL lines)."
+        },
+        "kukaKrl.validation.globalUsage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warning when GLOBAL is used without DECL/DEF/DEFFCT/STRUC/SIGNAL/ENUM (and not with a predefined type) on the same line."
+        },
+        "kukaKrl.validation.defdatPublicGlobalRequired": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warning when a DECL/SIGNAL/STRUC inside DEFDAT … PUBLIC is missing the GLOBAL modifier."
+        },
+        "kukaKrl.validation.defdatNonPublicGlobalForbidden": {
+          "type": "boolean",
+          "default": true,
+          "description": "Error when a DECL/SIGNAL/STRUC inside a non-PUBLIC DEFDAT uses GLOBAL."
+        }
+      }
+    }
   },
   "scripts": {
     "compile": "tsc -b client server"

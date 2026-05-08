@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.1] - 2026-05-08
+### Added
+- Four `kukaKrl.validation.*` settings to toggle individual diagnostics on or off, all defaulting to `true`:
+  - `variableNameLength` — 24-character variable name limit (Error)
+  - `globalUsage` — `GLOBAL` keyword usage check (Warning)
+  - `defdatPublicGlobalRequired` — `DEFDAT … PUBLIC` requires `GLOBAL` declarations (Warning)
+  - `defdatNonPublicGlobalForbidden` — non-PUBLIC `DEFDAT` forbids `GLOBAL` declarations (Error)
+
+  Toggling a setting clears stale diagnostics across open files immediately, no reload required. The two server-side toggles (`defdat*`) are pushed to the language server via a `custom/setValidationConfig` notification.
+
+---
+
 ## [1.7.0] - 2026-05-07
 ### Added
 - Folding ranges for KRL block constructs: `DEF`/`DEFFCT`/`DEFDAT`, `IF`, `LOOP`, `FOR`, `WHILE`, `SWITCH`, `STRUC` and `REPEAT`. Also folds the KUKA-style `;FOLD … ;ENDFOLD` editor blocks that appear in machine-generated code.

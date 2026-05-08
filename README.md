@@ -15,6 +15,21 @@ A Visual Studio Code extension to help write, understand, and maintain KUKA Robo
 - Autocompletion for variables after typing the variable name followed by '.'
 - IntelliSense Autocompletion for Functions and their own Parameters
 
+## Configuration
+
+Each diagnostic can be toggled independently in `settings.json`. All default to `true`.
+
+```json
+{
+  "kukaKrl.validation.variableNameLength": true,
+  "kukaKrl.validation.globalUsage": true,
+  "kukaKrl.validation.defdatPublicGlobalRequired": true,
+  "kukaKrl.validation.defdatNonPublicGlobalForbidden": true
+}
+```
+
+Set any of them to `false` to silence the corresponding warning or error. Changes take effect immediately, without reloading the window.
+
 ## Installation
 
 You can install the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/).

@@ -17,6 +17,24 @@ const fs = require("fs");
 // Diagnostic collection for KRL language
 const diagnosticCollection = vscode.languages.createDiagnosticCollection('krl');
 let client;
+function getValidationConfig() {
+    const cfg = vscode.workspace.getConfiguration('kukaKrl');
+    return {
+        variableNameLength: cfg.get('validation.variableNameLength', true),
+        globalUsage: cfg.get('validation.globalUsage', true),
+        defdatPublicGlobalRequired: cfg.get('validation.defdatPublicGlobalRequired', true),
+        defdatNonPublicGlobalForbidden: cfg.get('validation.defdatNonPublicGlobalForbidden', true),
+    };
+}
+function pushConfigToServer() {
+    if (!client)
+        return;
+    const cfg = getValidationConfig();
+    client.sendNotification('custom/setValidationConfig', {
+        defdatPublicGlobalRequired: cfg.defdatPublicGlobalRequired,
+        defdatNonPublicGlobalForbidden: cfg.defdatNonPublicGlobalForbidden,
+    });
+}
 /**
  * Extension activation function
  */
@@ -57,8 +75,21 @@ function activate(context) {
             validateTextDocument(document);
         }
     }));
+    // React to configuration changes: re-run client validation on all open KRL docs
+    // and push the latest config to the server (which will re-validate .dat files).
+    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
+        if (!e.affectsConfiguration('kukaKrl'))
+            return;
+        vscode.workspace.textDocuments.forEach(doc => {
+            if (doc.languageId === 'krl')
+                validateTextDocument(doc);
+        });
+        pushConfigToServer();
+    }));
     // Start the language client
     client.start().then(() => {
+        // Send initial validation config so the server gates its own checks correctly.
+        pushConfigToServer();
         // After client starts, validate all already opened KRL documents
         vscode.workspace.textDocuments.forEach(doc => {
             if (doc.languageId === 'krl') {
@@ -79,14 +110,20 @@ exports.activate = activate;
  * Produces diagnostics for variable name length and improper GLOBAL usage
  */
 function validateTextDocument(document) {
+    const cfg = getValidationConfig();
     const diagnostics = [];
+    // If both client-side checks are off, just clear stale diagnostics and bail out.
+    if (!cfg.variableNameLength && !cfg.globalUsage) {
+        diagnosticCollection.set(document.uri, diagnostics);
+        return;
+    }
     for (let i = 0; i < document.lineCount; i++) {
         try {
             const line = document.lineAt(i);
             const fullText = line.text;
             const lineText = fullText.split(';')[0].trim(); // Ignore comments
             // Check variable length in DECL, STRUC, SIGNAL lines
-            if (/\b(DECL|STRUC|SIGNAL)\b/i.test(lineText)) {
+            if (cfg.variableNameLength && /\b(DECL|STRUC|SIGNAL)\b/i.test(lineText)) {
                 // Remove keywords to isolate variable part
                 const varPart = lineText
                     .replace(/\bDECL\b/i, '')
@@ -110,7 +147,7 @@ function validateTextDocument(document) {
                 }
             }
             // Check for standalone GLOBAL usage without DECL, DEF, DEFFCT, STRUC, SIGNAL
-            if (/\bGLOBAL\b/i.test(lineText) && !/\b(DECL|DEF|DEFFCT|STRUC|SIGNAL|ENUM)\b/i.test(lineText) && !/\b(INT|REAL|FRAME|CHAR|BOOL|STRING|E6AXIS|E6POS|AXIS|LOAD)\b/i.test(lineText)) {
+            if (cfg.globalUsage && /\bGLOBAL\b/i.test(lineText) && !/\b(DECL|DEF|DEFFCT|STRUC|SIGNAL|ENUM)\b/i.test(lineText) && !/\b(INT|REAL|FRAME|CHAR|BOOL|STRING|E6AXIS|E6POS|AXIS|LOAD)\b/i.test(lineText)) {
                 const globalIndex = fullText.indexOf('GLOBAL');
                 const range = new vscode.Range(i, globalIndex, i, globalIndex + 'GLOBAL'.length);
                 diagnostics.push(new vscode.Diagnostic(range, `'GLOBAL' must be used with DECL, STRUC, or SIGNAL on the same line, except if it's used with a predefined types.`, vscode.DiagnosticSeverity.Warning));
