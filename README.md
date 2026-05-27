@@ -1,6 +1,8 @@
-# KUKA KRL Assistant
+# KUKA KRL Edit
 
 A Visual Studio Code extension to help write, understand, and maintain KUKA Robot Language (KRL) programs.
+
+This extension is maintained by VDRobotics and is based on the original KUKA KRL Assistant project.
 
 ## Features
 
@@ -36,11 +38,11 @@ Set any of them to `false` to silence the corresponding warning or error. Change
 
 ## Installation
 
-You can install the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/).
+You can install the extension from the Visual Studio Marketplace after the first VDRobotics release is published.
 
 ## Repository
 
-[Public Repo on Git Hub](https://github.com/Vyken14/KUKA-KRL-Assistant)
+[Public Repo on GitHub](https://github.com/vdrobotics/KUKA-KRL-Edit)
 
 ## License
 

@@ -1,12 +1,12 @@
 {
-  "name": "kuka-krl-assistant",
-  "displayName": "KUKA KRL Assistant",
+  "name": "kuka-krl-edit",
+  "displayName": "KUKA KRL Edit",
   "description": "Language features for KUKA KRL",
   "version": "1.8.0",
-  "publisher": "Alfred",
+  "publisher": "VDRobotics",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vyken14/KUKA-KRL-Assistant"
+    "url": "https://github.com/vdrobotics/KUKA-KRL-Edit"
   },
   "engines": {
     "vscode": "^1.85.0"
