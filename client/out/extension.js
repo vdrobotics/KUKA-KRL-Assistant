@@ -21,6 +21,8 @@ function getValidationConfig() {
     const cfg = vscode.workspace.getConfiguration('kukaKrl');
     return {
         variableNameLength: cfg.get('validation.variableNameLength', true),
+        variableNameSyntax: cfg.get('validation.variableNameSyntax', true),
+        undeclaredIdentifiers: cfg.get('validation.undeclaredIdentifiers', false),
         globalUsage: cfg.get('validation.globalUsage', true),
         defdatPublicGlobalRequired: cfg.get('validation.defdatPublicGlobalRequired', true),
         defdatNonPublicGlobalForbidden: cfg.get('validation.defdatNonPublicGlobalForbidden', true),
@@ -33,6 +35,7 @@ function pushConfigToServer() {
     client.sendNotification('custom/setValidationConfig', {
         defdatPublicGlobalRequired: cfg.defdatPublicGlobalRequired,
         defdatNonPublicGlobalForbidden: cfg.defdatNonPublicGlobalForbidden,
+        undeclaredIdentifiers: cfg.undeclaredIdentifiers,
     });
 }
 /**
@@ -112,8 +115,8 @@ exports.activate = activate;
 function validateTextDocument(document) {
     const cfg = getValidationConfig();
     const diagnostics = [];
-    // If both client-side checks are off, just clear stale diagnostics and bail out.
-    if (!cfg.variableNameLength && !cfg.globalUsage) {
+    // If all client-side checks are off, just clear stale diagnostics and bail out.
+    if (!cfg.variableNameLength && !cfg.variableNameSyntax && !cfg.globalUsage) {
         diagnosticCollection.set(document.uri, diagnostics);
         return;
     }
@@ -122,33 +125,29 @@ function validateTextDocument(document) {
             const line = document.lineAt(i);
             const fullText = line.text;
             const lineText = fullText.split(';')[0].trim(); // Ignore comments
-            // Check variable length in DECL, STRUC, SIGNAL lines
-            if (cfg.variableNameLength && /\b(DECL|STRUC|SIGNAL)\b/i.test(lineText)) {
-                // Remove keywords to isolate variable part
-                const varPart = lineText
-                    .replace(/\bDECL\b/i, '')
-                    .replace(/\bGLOBAL\b/i, '')
-                    .replace(/\b(INT|FRAME|LOAD|REAL|BOOL|STRING|SIGNAL|STRUC)\b/i, '')
-                    .replace(/\b\w+_T\b/i, '')
-                    .trim();
-                // Split variables and validate length
-                const variableTokens = varPart.split(',').map(v => v.trim());
-                for (const token of variableTokens) {
-                    const rawVar = token.split('=')[0].split('[')[0].trim();
-                    const match = rawVar.match(/^([a-zA-Z_][a-zA-Z0-9_]*)/);
-                    const varName = match ? match[1] : null;
-                    if (varName && varName.length > 24) {
-                        const varIndex = fullText.indexOf(varName);
-                        if (varIndex >= 0) {
-                            const range = new vscode.Range(i, varIndex, i, varIndex + varName.length);
-                            diagnostics.push(new vscode.Diagnostic(range, 'The variable name is too long (max 24 characters).', vscode.DiagnosticSeverity.Error));
+            if (lineText.startsWith('&'))
+                continue;
+            if ((cfg.variableNameLength || cfg.variableNameSyntax) && isVariableDeclarationLine(lineText)) {
+                for (const declaredName of getDeclaredNames(fullText)) {
+                    if (isSystemVariableName(declaredName.name))
+                        continue;
+                    if (cfg.variableNameLength && declaredName.name.length > 24) {
+                        const range = new vscode.Range(i, declaredName.start, i, declaredName.start + declaredName.name.length);
+                        diagnostics.push(new vscode.Diagnostic(range, 'The variable name is too long (max 24 characters).', vscode.DiagnosticSeverity.Error));
+                    }
+                    if (cfg.variableNameSyntax) {
+                        const invalidReason = getInvalidVariableNameReason(declaredName.name);
+                        if (invalidReason) {
+                            const range = new vscode.Range(i, declaredName.start, i, declaredName.start + declaredName.name.length);
+                            diagnostics.push(new vscode.Diagnostic(range, invalidReason, vscode.DiagnosticSeverity.Error));
                         }
                     }
                 }
             }
             // Check for standalone GLOBAL usage without DECL, DEF, DEFFCT, STRUC, SIGNAL
             if (cfg.globalUsage && /\bGLOBAL\b/i.test(lineText) && !/\b(DECL|DEF|DEFFCT|STRUC|SIGNAL|ENUM)\b/i.test(lineText) && !/\b(INT|REAL|FRAME|CHAR|BOOL|STRING|E6AXIS|E6POS|AXIS|LOAD)\b/i.test(lineText)) {
-                const globalIndex = fullText.indexOf('GLOBAL');
+                const globalMatch = /\bGLOBAL\b/i.exec(fullText);
+                const globalIndex = globalMatch ? globalMatch.index : 0;
                 const range = new vscode.Range(i, globalIndex, i, globalIndex + 'GLOBAL'.length);
                 diagnostics.push(new vscode.Diagnostic(range, `'GLOBAL' must be used with DECL, STRUC, or SIGNAL on the same line, except if it's used with a predefined types.`, vscode.DiagnosticSeverity.Warning));
             }
@@ -158,6 +157,101 @@ function validateTextDocument(document) {
         }
     }
     diagnosticCollection.set(document.uri, diagnostics);
+}
+function isVariableDeclarationLine(lineText) {
+    return /^\s*(?:(?:GLOBAL\s+)?DECL|DECL\s+GLOBAL|(?:GLOBAL\s+)?SIGNAL|(?:GLOBAL\s+)?STRUC|GLOBAL\s+(?:CONST\s+)?(?:INT|REAL|BOOL|CHAR|STRING|FRAME|E6POS|E6AXIS|AXIS|LOAD|LOAD_DATA)\b)/i.test(lineText);
+}
+function getDeclaredNames(fullLine) {
+    const commentStart = fullLine.indexOf(';');
+    const code = commentStart >= 0 ? fullLine.slice(0, commentStart) : fullLine;
+    const trimmed = code.trimStart();
+    const offset = code.length - trimmed.length;
+    const signalMatch = /^(?:GLOBAL\s+)?SIGNAL\s+([^\s=,\[]+)/i.exec(trimmed);
+    if (signalMatch) {
+        return [{ name: signalMatch[1], start: offset + signalMatch.index + signalMatch[0].lastIndexOf(signalMatch[1]) }];
+    }
+    const structMatch = /^(?:GLOBAL\s+)?STRUC\s+([^\s=,\[]+)\s*(.*)$/i.exec(trimmed);
+    if (structMatch) {
+        const names = [{
+                name: structMatch[1],
+                start: offset + structMatch.index + structMatch[0].indexOf(structMatch[1])
+            }];
+        const memberPart = structMatch[2];
+        const memberOffset = offset + structMatch[0].length - memberPart.length;
+        names.push(...getStructMemberNames(memberPart, memberOffset));
+        return names;
+    }
+    const declMatch = /^(?:(?:GLOBAL\s+)?DECL\s+(?:GLOBAL\s+)?|GLOBAL\s+)(?:CONST\s+)?([A-Za-z][A-Za-z0-9_]*)\s+(.+)$/i.exec(trimmed);
+    if (!declMatch)
+        return [];
+    const varPart = declMatch[2];
+    const varOffset = offset + declMatch[0].length - varPart.length;
+    return getVariableListNames(varPart, varOffset);
+}
+function getVariableListNames(varPart, offset) {
+    const names = [];
+    const tokens = splitRespectingBrackets(varPart);
+    let searchStart = 0;
+    for (const token of tokens) {
+        const tokenIndex = varPart.indexOf(token, searchStart);
+        searchStart = tokenIndex + token.length;
+        const candidate = /^[\s]*([^\s=\[]+)/.exec(token);
+        if (!candidate)
+            continue;
+        names.push({
+            name: candidate[1],
+            start: offset + tokenIndex + candidate[0].indexOf(candidate[1])
+        });
+    }
+    return names;
+}
+function getStructMemberNames(memberPart, offset) {
+    var _a, _b;
+    const names = [];
+    const typeRegex = /\b(INT|REAL|BOOL|CHAR|STRING|FRAME|E6POS|E6AXIS|AXIS|LOAD|LOAD_DATA)\b/gi;
+    const typeMatches = Array.from(memberPart.matchAll(typeRegex));
+    for (let i = 0; i < typeMatches.length; i++) {
+        const match = typeMatches[i];
+        const nextMatch = typeMatches[i + 1];
+        const typeStart = (_a = match.index) !== null && _a !== void 0 ? _a : 0;
+        const nextTypeStart = nextMatch ? (_b = nextMatch.index) !== null && _b !== void 0 ? _b : memberPart.length : memberPart.length;
+        const varStart = typeStart + match[0].length;
+        const varEnd = nextTypeStart;
+        const varPart = memberPart.slice(varStart, varEnd).replace(/,\s*$/, '');
+        names.push(...getVariableListNames(varPart, offset + varStart));
+    }
+    return names;
+}
+function getInvalidVariableNameReason(name) {
+    if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(name)) {
+        return 'Invalid KRL variable name. Use letters, digits, and underscores, and start with a letter.';
+    }
+    return undefined;
+}
+function isSystemVariableName(name) {
+    return /^\$[A-Za-z_][A-Za-z0-9_]*$/.test(name);
+}
+function splitRespectingBrackets(input) {
+    const result = [];
+    let current = '';
+    let bracketDepth = 0;
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        if (char === '[')
+            bracketDepth++;
+        if (char === ']')
+            bracketDepth = Math.max(0, bracketDepth - 1);
+        if (char === ',' && bracketDepth === 0) {
+            result.push(current.trim());
+            current = '';
+        }
+        else {
+            current += char;
+        }
+    }
+    if (current.trim())
+        result.push(current.trim());
+    return result;
 }
 /**
  * Validate all KRL files in the workspace with extensions .src, .dat, .sub
@@ -178,8 +272,7 @@ function validateAllKrlFiles() {
                 if (!document) {
                     document = yield vscode.workspace.openTextDocument(file);
                 }
-                // Only validate if languageId is one of the KRL types (some files might not be recognized)
-                if (['src', 'dat', 'sub'].includes(document.languageId)) {
+                if (document.languageId === 'krl') {
                     validateTextDocument(document);
                 }
             }

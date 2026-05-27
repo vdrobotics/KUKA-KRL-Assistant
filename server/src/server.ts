@@ -83,40 +83,52 @@ let variableStructTypes: VariableToStructMap = {};
 let structDefinitions: StructMap = {};
 let functionsDeclared: FunctionDeclaration[] = [];
 let mergedVariables :VariableInfo[] = [];
+let workspaceDeclaredNameCache: Set<string> | undefined;
 
 // Server-side validation toggles, pushed by the client via 'custom/setValidationConfig'.
 // Defaults match package.json: all checks on.
 const serverValidationConfig = {
   defdatPublicGlobalRequired: true,
   defdatNonPublicGlobalForbidden: true,
+  undeclaredIdentifiers: false,
 };
 
 connection.onNotification(
   'custom/setValidationConfig',
-  (cfg: { defdatPublicGlobalRequired?: boolean; defdatNonPublicGlobalForbidden?: boolean }) => {
+  (cfg: { defdatPublicGlobalRequired?: boolean; defdatNonPublicGlobalForbidden?: boolean; undeclaredIdentifiers?: boolean }) => {
     if (typeof cfg.defdatPublicGlobalRequired === 'boolean') {
       serverValidationConfig.defdatPublicGlobalRequired = cfg.defdatPublicGlobalRequired;
     }
     if (typeof cfg.defdatNonPublicGlobalForbidden === 'boolean') {
       serverValidationConfig.defdatNonPublicGlobalForbidden = cfg.defdatNonPublicGlobalForbidden;
     }
-    // Re-validate all open .dat files so stale diagnostics clear or fresh ones appear immediately.
+    if (typeof cfg.undeclaredIdentifiers === 'boolean') {
+      serverValidationConfig.undeclaredIdentifiers = cfg.undeclaredIdentifiers;
+    }
+    // Re-validate all open files so stale diagnostics clear or fresh ones appear immediately.
     documents.all().forEach(doc => {
-      if (doc.uri.endsWith('.dat')) validateDatFile(doc, connection);
+      if (isKrlDocument(doc)) validateDocument(doc, connection);
     });
   }
 );
 
 const CODE_KEYWORDS = [
-  'GLOBAL', 'DEF', 'DEFFCT', 'END', 'ENDFCT', 'RETURN', 'TRIGGER', 
+    'GLOBAL', 'DEF', 'DEFFCT', 'END', 'ENDFCT', 'RETURN', 'TRIGGER', 
     'REAL', 'BOOL', 'DECL', 'IF', 'ELSE', 'ENDIF', 'CONTINUE', 'FOR', 'ENDFOR', 'WHILE', 
-    'AND', 'OR', 'NOT', 'TRUE', 'FALSE', 'INT', 'STRING', 'PULSE', 'WAIT', 'SEC', 'NULLFRAME', 'THEN',
+    'ENDWHILE', 'REPEAT', 'UNTIL', 'AND', 'OR', 'NOT', 'TRUE', 'FALSE', 'INT', 'STRING', 'PULSE', 'WAIT', 'SEC', 'NULLFRAME', 'THEN',
     'CASE', 'DEFAULT', 'SWITCH', 'ENDSWITCH', 'BREAK', 'ABS', 'SIN', 'COS', 'TAN', 'ASIN', 'ACOS', 'ATAN2', 'MAX', 'MIN',
     'DEFDAT', 'ENDDAT', 'PUBLIC', 'STRUC', 'WHEN', 'DISTANCE', 'DO', 'DELAY', 'PRIO', 'LIN', 'PTP', 'DELAY',
     'C_PTP', 'C_LIN', 'C_VEL', 'C_DIS', 'BAS', 'LOAD', 'FRAME', 'IN', 'OUT',
     'X', 'Y', 'Z', 'A', 'B', 'C', 'S', 'T', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'E1', 'E2', 'E3', 'E4', 'E5', 'E6',
     'SQRT', 'TO', 'Axis', 'E6AXIS', 'E6POS', 'LOAD_DATA', 'BASE', 'TOOL',
     'INVERSE', 'FORWARD', 'B_AND', 'B_OR', 'B_NOT', 'B_XOR', 'B_NAND', 'B_NOR', 'B_XNOR',
+    'GOTO', 'HALT', 'INTERRUPT', 'ON', 'OFF', 'RESUME', 'BRAKE', 'ON_ERROR_PROCEED', 'ERR_CLEAR',
+    'CIRC', 'SPLINE', 'ENDSPLINE', 'LIN_REL', 'PTP_REL', 'SLIN', 'SPTP', 'SCIRC', 'SPL', 'ENDSPL', 'WAITFOR', 'STRLEN',
+    'CWRITE', 'SWRITE', 'STRCOMP', 'IS_KEY_PRESSED', 'CLEAR_KRLMSG', 'SET_KRLMSG', 'ERR_RAISE', 'EXOR', 'EXIT', 'CHANNEL', 'EXT',
+    'STRADD', 'STRCLEAR', 'EXISTS_KRLMSG', 'EXISTS_KRLDLG', 'SET_KRLDLG',
+    'LK', 'EK', 'EB', 'EO', 'EB_ABS', 'INV_POS',
+    'VARSTATE', 'WITH', 'MBX_REC', 'SYNC', 'EB_TEST', 'TEST_BRAKE',
+    'INTTOSTRWITHPREFIX', 'GET_COLLMON_SET',
 ];
  
 
@@ -180,11 +192,6 @@ connection.onInitialized(async () => {
     const content = fs.readFileSync(filePath, 'utf8');
     const uri = URI.file(filePath).toString();
 
-    // const diagnostics = await validateVariablesUsage(
-    //   TextDocument.create(uri, 'krl', 1, content),
-    //   mergedVariables
-    // );
-    // connection.sendDiagnostics({ uri, diagnostics });
   }
 });
 
@@ -194,10 +201,7 @@ connection.onInitialized(async () => {
 
 documents.onDidChangeContent(async change => {
   const { document } = change;
-
-  if (document.uri.endsWith('.dat')) {
-    validateDatFile(document, connection);
-  }
+  workspaceDeclaredNameCache = undefined;
 
   extractStrucVariables(document.getText());
 
@@ -206,9 +210,24 @@ documents.onDidChangeContent(async change => {
   fileVariablesMap.set(document.uri, collector.getVariables());
 
   mergedVariables = mergeAllVariables(fileVariablesMap);
+  if (isKrlDocument(document)) {
+    validateDocument(document, connection);
+  }
   //logToFile(`Extracted variables: ${JSON.stringify(mergedVariables, null, 2)}`);
-  // const diagnostics = await validateVariablesUsage(document, mergedVariables);
-  // connection.sendDiagnostics({ uri: document.uri, diagnostics });
+});
+
+documents.onDidOpen(change => {
+  const { document } = change;
+  workspaceDeclaredNameCache = undefined;
+
+  const collector = new DeclaredVariableCollector();
+  collector.extractFromText(document.getText());
+  fileVariablesMap.set(document.uri, collector.getVariables());
+  mergedVariables = mergeAllVariables(fileVariablesMap);
+
+  if (isKrlDocument(document)) {
+    validateDocument(document, connection);
+  }
 });
 
 // ===================
@@ -228,6 +247,26 @@ function getAllDatFiles(dir: string): string[] {
       if (entry.isDirectory()) {
         recurse(fullPath);
       } else if (entry.isFile() && fullPath.endsWith('.dat')) {
+        result.push(fullPath);
+      }
+    }
+  }
+
+  recurse(dir);
+  return result;
+}
+
+function getAllKrlFiles(dir: string): string[] {
+  const result: string[] = [];
+
+  function recurse(currentDir: string) {
+    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name === '.git') continue;
+        recurse(fullPath);
+      } else if (entry.isFile() && /\.(src|dat|sub)$/i.test(fullPath)) {
         result.push(fullPath);
       }
     }
@@ -908,12 +947,30 @@ async function findSrcFiles(dir: string): Promise<string[]> {
 export function validateAllDatFiles(connection: Connection) {
   documents.all().forEach(document => {
     if (document.uri.endsWith('.dat')) {
-      validateDatFile(document, connection);
+      validateDocument(document, connection);
     }
   });
 }
 
-function validateDatFile(document: TextDocument, connection: Connection) {
+function isKrlDocument(document: TextDocument): boolean {
+  return /\.(src|dat|sub)$/i.test(document.uri);
+}
+
+function validateDocument(document: TextDocument, connection: Connection) {
+  const diagnostics: Diagnostic[] = [];
+
+  if (document.uri.toLowerCase().endsWith('.dat')) {
+    diagnostics.push(...validateDatFile(document));
+  }
+
+  if (serverValidationConfig.undeclaredIdentifiers) {
+    diagnostics.push(...validateUndeclaredIdentifiers(document));
+  }
+
+  connection.sendDiagnostics({ uri: document.uri, diagnostics });
+}
+
+function validateDatFile(document: TextDocument): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
   const lines = document.getText().split(/\r?\n/);
 
@@ -979,7 +1036,174 @@ function validateDatFile(document: TextDocument, connection: Connection) {
       }
     }
   }
-  connection.sendDiagnostics({ uri: document.uri, diagnostics });
+  return diagnostics;
+}
+
+function validateUndeclaredIdentifiers(document: TextDocument): Diagnostic[] {
+  const diagnostics: Diagnostic[] = [];
+  const lines = document.getText().split(/\r?\n/);
+  const declaredNames = getDeclaredNamesForDocument(document);
+  const knownFunctionNames = getKnownFunctionNames(document.getText());
+  const knownStructNames = new Set(Object.keys(structDefinitions).map(name => name.toLowerCase()));
+  const keywordNames = new Set(CODE_KEYWORDS.map(keyword => keyword.toUpperCase()));
+  const identifierRegex = /\b[A-Za-z_][A-Za-z0-9_]*\b/g;
+
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const rawLine = lines[lineIndex];
+    const code = stripStrings(stripLineComment(rawLine));
+
+    if (shouldSkipUndeclaredIdentifierLine(code)) continue;
+
+    let match: RegExpExecArray | null;
+    while ((match = identifierRegex.exec(code)) !== null) {
+      const name = match[0];
+      const lowerName = name.toLowerCase();
+      const upperName = name.toUpperCase();
+      const prev = match.index > 0 ? code[match.index - 1] : '';
+      const next = match.index + name.length < code.length ? code[match.index + name.length] : '';
+
+      if (prev === '$' || prev === '#' || prev === '.' || prev === '&') continue;
+      if (next === ':') continue;
+      if (isStructInitializerField(code, match.index, name.length)) continue;
+      if (keywordNames.has(upperName)) continue;
+      if (declaredNames.has(lowerName)) continue;
+      if (knownFunctionNames.has(lowerName)) continue;
+      if (knownStructNames.has(lowerName)) continue;
+
+      const newDiagnostic: Diagnostic = {
+        severity: DiagnosticSeverity.Information,
+        message: `Identifier "${name}" is not declared in the current KRL workspace index.`,
+        range: {
+          start: { line: lineIndex, character: match.index },
+          end: { line: lineIndex, character: match.index + name.length }
+        },
+        source: 'Kuka-krl-assistant'
+      };
+
+      if (!isDuplicateDiagnostic(newDiagnostic, diagnostics)) {
+        diagnostics.push(newDiagnostic);
+      }
+    }
+  }
+
+  return diagnostics;
+}
+
+function getDeclaredNamesForDocument(document: TextDocument): Set<string> {
+  const declaredNames = new Set<string>();
+
+  for (const name of getWorkspaceDeclaredNames()) {
+    declaredNames.add(name);
+  }
+
+  for (const variable of mergedVariables) {
+    declaredNames.add(variable.name.toLowerCase());
+  }
+
+  const collector = new DeclaredVariableCollector();
+  collector.extractFromText(document.getText());
+  for (const variable of collector.getVariables()) {
+    declaredNames.add(variable.name.toLowerCase());
+  }
+
+  for (const paramName of getFunctionParameterNames(document.getText())) {
+    declaredNames.add(paramName.toLowerCase());
+  }
+
+  return declaredNames;
+}
+
+function getWorkspaceDeclaredNames(): Set<string> {
+  if (workspaceDeclaredNameCache) {
+    return workspaceDeclaredNameCache;
+  }
+
+  const declaredNames = new Set<string>();
+  if (!workspaceRoot) {
+    workspaceDeclaredNameCache = declaredNames;
+    return declaredNames;
+  }
+
+  for (const filePath of getAllKrlFiles(workspaceRoot)) {
+    const uri = URI.file(filePath).toString();
+    const openDocument = documents.get(uri);
+    const content = openDocument ? openDocument.getText() : fs.readFileSync(filePath, 'utf8');
+
+    const collector = new DeclaredVariableCollector();
+    collector.extractFromText(content);
+    for (const variable of collector.getVariables()) {
+      declaredNames.add(variable.name.toLowerCase());
+    }
+  }
+
+  workspaceDeclaredNameCache = declaredNames;
+  return declaredNames;
+}
+
+function getKnownFunctionNames(documentText: string): Set<string> {
+  const names = new Set(functionsDeclared.map(fn => fn.name.toLowerCase()));
+  const functionRegex = /\b(?:GLOBAL\s+)?(?:DEF|DEFFCT)\s+(?:\w+\s+)?(\w+)\s*\(/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = functionRegex.exec(documentText)) !== null) {
+    names.add(match[1].toLowerCase());
+  }
+
+  return names;
+}
+
+function getFunctionParameterNames(documentText: string): string[] {
+  const params: string[] = [];
+  const functionRegex = /\b(?:GLOBAL\s+)?(?:DEF|DEFFCT)\s+(?:\w+\s+)?\w+\s*\(([^)]*)\)/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = functionRegex.exec(documentText)) !== null) {
+    for (const rawParam of splitVarsRespectingBrackets(match[1])) {
+      const paramText = rawParam.split(':')[0].trim();
+      if (!paramText) continue;
+
+      const identifiers = paramText.match(/[A-Za-z_][A-Za-z0-9_]*/g);
+      if (!identifiers || identifiers.length === 0) continue;
+
+      const name = identifiers[identifiers.length - 1];
+      if (!CODE_KEYWORDS.includes(name.toUpperCase())) {
+        params.push(name);
+      }
+    }
+  }
+
+  return params;
+}
+
+function stripLineComment(line: string): string {
+  const commentStart = line.indexOf(';');
+  return commentStart >= 0 ? line.slice(0, commentStart) : line;
+}
+
+function stripStrings(line: string): string {
+  return line
+    .replace(/"[^"]*"/g, match => ' '.repeat(match.length))
+    .replace(/'[^']*'/g, match => ' '.repeat(match.length));
+}
+
+function shouldSkipUndeclaredIdentifierLine(code: string): boolean {
+  return /^\s*&/.test(code) ||
+    /^\s*(?:GLOBAL\s+)?(?:DEF|DEFFCT|DEFDAT|END|ENDFCT|ENDDAT|DECL|SIGNAL|STRUC|ENUM)\b/i.test(code) ||
+    /^\s*(?:GLOBAL\s+)?(?:CONST\s+)?[A-Za-z_][A-Za-z0-9_]*\s+[A-Za-z_$][A-Za-z0-9_$]*(?:\s*(?:\[|=|,|;|$))/i.test(code) ||
+    /^\s*(?:GOTO|HALT|INTERRUPT|ON_ERROR_PROCEED|RESUME|BRAKE|CHANNEL|EXT)\b/i.test(code);
+}
+
+function isStructInitializerField(code: string, start: number, length: number): boolean {
+  const before = code.slice(0, start);
+  const openBraces = (before.match(/{/g) || []).length;
+  const closeBraces = (before.match(/}/g) || []).length;
+  if (openBraces <= closeBraces) return false;
+
+  const beforeNonSpace = before.trimEnd().slice(-1);
+  if (beforeNonSpace !== '{' && beforeNonSpace !== ',') return false;
+
+  const after = code.slice(start + length);
+  return /^\s*(?:\[[^\]]*\])?\s*(?:(?:,|})|[-+]?\d|{|#|"|TRUE\b|FALSE\b|[A-Za-z_][A-Za-z0-9_]*\s*(?:,|}))/i.test(after);
 }
 
 
@@ -996,72 +1220,6 @@ function isDuplicateDiagnostic(newDiag: Diagnostic, existingDiagnostics: Diagnos
     diag.message === newDiag.message &&
     diag.severity === newDiag.severity
   );
-}
-
-/**
- * Validate usage of variables by ensuring each variable usage is declared.
- * Returns array of Diagnostics for undeclared variables.
- */
-async function validateVariablesUsage(document: TextDocument, variableTypes: { [varName: string]: string }): Promise<Diagnostic[]> {
-  const diagnostics: Diagnostic[] = [];
-  const text = document.getText();
-  const lines = text.split(/\r?\n/);
-
-  const variableRegex = /\b([a-zA-Z_]\w*)\b/g;
-
-
-
-  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-    const line = lines[lineIndex];
-
-    // Skip lines with declarations or structs or signals
-    if (/^\s*(GLOBAL\s+)?(DECL|STRUC|SIGNAL)\b/i.test(line)) {
-      continue;
-    }
-
-    let match;
-    while ((match = variableRegex.exec(line)) !== null) {
-      const varName = match[1];
-
-      // Skip comments starting with ';'
-      const commentIndex = line.indexOf(';');
-      if (commentIndex !== -1 && match.index >= commentIndex) continue;
-
-      // Skip params starting with '&'
-      const paramIndex = line.indexOf('&');
-      if (paramIndex !== -1 && match.index >= paramIndex) continue;
-
-      // Skip system vars starting with '$' or '#'
-      if (match.index !== undefined && match.index > 0 && (line[match.index - 1] === '$' || line[match.index - 1] === '#')) continue;
-
-      // Skip known function names
-      if (await isFunctionDeclared(varName,"function")) continue;
-
-      // Skip keywords and known types
-      CODE_KEYWORDS.forEach(element => {        
-        if (element==varName.toUpperCase()) return;
-      });
-
-      // Report undeclared variables
-      if (!(varName in variableTypes)) {
-        const newDiagnostic: Diagnostic = {
-          severity: DiagnosticSeverity.Error,
-          message: `Variable "${varName}" not declared.`,
-          range: {
-            start: { line: lineIndex, character: match.index },
-            end: { line: lineIndex, character: match.index + varName.length }
-          },
-          source: 'Kuka-krl-assistant'
-        };
-
-        if (!isDuplicateDiagnostic(newDiagnostic, diagnostics)) {
-          diagnostics.push(newDiagnostic);
-        }
-      }
-    }
-  }
-
-  return diagnostics;
 }
 
 // =====================
@@ -1125,7 +1283,7 @@ class DeclaredVariableCollector {
     const textWithoutStrucs = documentText.replace(/STRUC\s+\w+[^]*?ENDSTRUC/gi, '');
 
     // Match DECL statements with optional GLOBAL before or after
-    const declRegex = /^\s*(GLOBAL\s+)?DECL\s+(GLOBAL\s+)?(\w+)\s+([^\r\n;]+)/gim;
+    const declRegex = /^\s*(GLOBAL\s+)?DECL\s+(GLOBAL\s+)?(?:CONST\s+)?(\w+)\s+([^\r\n;]+)/gim;
 
     let match: RegExpExecArray | null;
     while ((match = declRegex.exec(textWithoutStrucs)) !== null) {
@@ -1141,6 +1299,53 @@ class DeclaredVariableCollector {
       for (const name of varNames) {
         if (!this.variables.has(name)) {
           this.variables.set(name, type);        
+        }
+      }
+    }
+
+    const globalTypeRegex = /^\s*GLOBAL\s+(?:CONST\s+)?(\w+)\s+([^\r\n;]+)/gim;
+    while ((match = globalTypeRegex.exec(textWithoutStrucs)) !== null) {
+      const type = match[1];
+      if (!CODE_KEYWORDS.includes(type.toUpperCase())) continue;
+
+      const varNames = splitVarsRespectingBrackets(match[2])
+        .map(name => name.trim())
+        .map(name => name.replace(/\[.*?\]/g, '').trim())
+        .map(name => name.replace(/\s*=\s*.+$/, ''))
+        .filter(name => /^[a-zA-Z_]\w*$/.test(name));
+
+      for (const name of varNames) {
+        if (!this.variables.has(name)) {
+          this.variables.set(name, type);
+        }
+      }
+    }
+
+    const signalRegex = /^\s*(GLOBAL\s+)?SIGNAL\s+([a-zA-Z_]\w*)\b/gim;
+    while ((match = signalRegex.exec(textWithoutStrucs)) !== null) {
+      const name = match[2];
+      if (!this.variables.has(name)) {
+        this.variables.set(name, 'SIGNAL');
+      }
+    }
+
+    const typedDataRegex = /^\s*(?:GLOBAL\s+)?(?:CONST\s+)?([A-Za-z_][A-Za-z0-9_]*)\s+([^\r\n;]+)/gim;
+    while ((match = typedDataRegex.exec(textWithoutStrucs)) !== null) {
+      const type = match[1];
+      const upperType = type.toUpperCase();
+      if (['DEF', 'DEFFCT', 'DEFDAT', 'END', 'ENDFCT', 'ENDDAT', 'IF', 'FOR', 'WHILE', 'SWITCH', 'ENUM', 'STRUC', 'SIGNAL', 'INTERRUPT'].includes(upperType)) {
+        continue;
+      }
+
+      const varNames = splitVarsRespectingBrackets(match[2])
+        .map(name => name.trim())
+        .map(name => name.replace(/\[.*?\]/g, '').trim())
+        .map(name => name.replace(/\s*=\s*.+$/, ''))
+        .filter(name => /^[a-zA-Z_$][\w$]*$/.test(name));
+
+      for (const name of varNames) {
+        if (!this.variables.has(name)) {
+          this.variables.set(name, type);
         }
       }
     }

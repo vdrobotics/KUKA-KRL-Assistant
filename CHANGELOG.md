@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.8.0] - 2026-05-27
+### Added
+- New `kukaKrl.validation.variableNameSyntax` diagnostic. It reports invalid KRL variable identifiers in declarations, including names that do not start with a letter, names containing unsupported characters, and names that reuse reserved KRL keywords or predefined types.
+- New experimental `kukaKrl.validation.undeclaredIdentifiers` diagnostic. It reports identifiers that are not declared in the current KRL workspace index as Information and is disabled by default.
+
+### Fixed
+- Variable-name validation now respects array brackets when splitting declaration lists, so declarations like `DECL INT arr[2,3], nextVar` are parsed correctly.
+- Variable-name validation no longer reports valid machine-data system variable declarations like `DECL ADAP_ACC $ADAP_ACC=#STEP2`.
+- Variable-name validation now treats `CONST` as a declaration modifier, so declarations like `DECL CONST CHAR MASREF_Modulname[6]` validate the actual variable name.
+- Variable-name validation no longer treats KRL keywords/types as invalid variable names, because valid machine data can use names like `LOAD_DATA`, `OUT`, or `ERR`.
+- `&` metadata lines such as `&COMMENT global points` are ignored by diagnostics.
+- Experimental undeclared-identifier validation was hardened against real KUKA project data: direct `.dat` type declarations, common KRL system commands/functions, structure initializers, and single-quoted bit literals now avoid false positives.
+- Added more KRL system commands/functions to the undeclared-identifier allow-list, including `REPEAT`, `UNTIL`, `PTP_REL`, `SWRITE`, and `ERR_RAISE`.
+- Undeclared-identifier validation now builds a workspace-wide declaration index from `.src`, `.dat`, and `.sub` files, so cross-file array declarations such as `DECL KORREKTUR Korr_GT3_RS_16818_Dross[3]` are resolved in function calls.
+- Added `IntToStrWithPrefix()` and `GET_COLLMON_SET()` to the undeclared-identifier allow-list.
+
+---
+
 ## [1.7.1] - 2026-05-08
 ### Added
 - Four `kukaKrl.validation.*` settings to toggle individual diagnostics on or off, all defaulting to `true`:

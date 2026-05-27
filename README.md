@@ -12,6 +12,8 @@ A Visual Studio Code extension to help write, understand, and maintain KUKA Robo
 - Hover to view function parameters
 - Warning when a GLOBAL variable is missing a DECL, SIGNAL or STRUC
 - Error when a variable name exceeds KUKA's 24-character limit
+- Error when a variable name has invalid KRL identifier syntax
+- Optional information diagnostic for identifiers that are not declared in the current KRL workspace index
 - Autocompletion for variables after typing the variable name followed by '.'
 - IntelliSense Autocompletion for Functions and their own Parameters
 
@@ -22,6 +24,8 @@ Each diagnostic can be toggled independently in `settings.json`. All default to 
 ```json
 {
   "kukaKrl.validation.variableNameLength": true,
+  "kukaKrl.validation.variableNameSyntax": true,
+  "kukaKrl.validation.undeclaredIdentifiers": false,
   "kukaKrl.validation.globalUsage": true,
   "kukaKrl.validation.defdatPublicGlobalRequired": true,
   "kukaKrl.validation.defdatNonPublicGlobalForbidden": true
