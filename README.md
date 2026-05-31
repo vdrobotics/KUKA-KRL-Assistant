@@ -39,7 +39,10 @@ Set any of them to `false` to silence the corresponding warning or error. Change
 
 ## Installation
 
-You can install the extension from the Visual Studio Marketplace after the first VDRobotics release is published.
+Install **KUKA KRL Edit** from the Visual Studio Marketplace:
+
+- In VS Code, open the Extensions view (`Ctrl+Shift+X`), search for **KUKA KRL Edit**, and click **Install**, or
+- run `code --install-extension VDRobotics.kuka-krl-edit` from a terminal.
 
 ## Repository
 

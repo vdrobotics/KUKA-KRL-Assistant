@@ -4,7 +4,19 @@
   "description": "Language features for KUKA KRL",
   "version": "1.8.2",
   "publisher": "VDRobotics",
+  "license": "MIT",
   "icon": "media/icon.png",
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "KUKA",
+    "KRL",
+    "robot",
+    "robotics",
+    "KRC"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/vdrobotics/KUKA-KRL-Edit"
