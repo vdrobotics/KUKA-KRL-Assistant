@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "node16",
     "target": "es6",
     "lib": ["es6"],
     "outDir": "out",
     "rootDir": "src",
     "strict": true,
     "noImplicitAny": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "types": ["node"],        
     "skipLibCheck": true      
   },

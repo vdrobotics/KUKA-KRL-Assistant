@@ -1,0 +1,2227 @@
+[
+  {
+    "var_name": "$A4PAR",
+    "var_descr": "Achse 4 parallel zur letzten rotatorischen Grundachse schalten",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ABS_ACCUR",
+    "var_descr": "Absolutgenaues Robotermodell ein - / ausschalten",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ABS_CONVERT",
+    "var_descr": "Konvertierung von Punktkoordinaten in absolutgenaues",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ABS_RELOAD",
+    "var_descr": "Absolutgenaues Robotermodell nachladen.",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ACC",
+    "var_descr": "Bahn -, Schwenk - und Drehbeschleunigungen im Vorlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ACC_ACT_MA",
+    "var_descr": "Grenzwert der axialen Sollbeschleunigung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACC_AXIS[]",
+    "var_descr": "Beschleunigung der Achsen im Vorlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACC_AXIS_C[]",
+    "var_descr": "Beschleunigung der Achsen im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACC_C",
+    "var_descr": "Bahn -, Schwenk - und Drehbeschleunigungen im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ACC_CAR_ACT",
+    "var_descr": "Aktuelle Werte der Beschleunigungskomponenten und der Gesamtbeschleunigung",
+    "var_type": "Frame"
+  },
+  {
+    "var_name": "$ACC_CAR_LIMIT",
+    "var_descr": "Setzt den maximal zulässigen Höchstwert für die Beschleuni- gungskomponenten bzw. die Gesamtbeschleunigung",
+    "var_type": "Frame"
+  },
+  {
+    "var_name": "$ACC_CAR_MAX",
+    "var_descr": "Speichert die betragsmäßig größten Werte von “$ACC_CAR_ACT”",
+    "var_type": "Frame"
+  },
+  {
+    "var_name": "$ACC_CAR_STOP",
+    "var_descr": "Der Roboter kann angehalten werden, wenn “$ACC_CAR_LIMIT” überschritten wird",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ACC_CAR_TOOL",
+    "var_descr": "Ein Punkt eines am Roboter montierten Werkzeugs, an dem die aktuell wirkende Beschleunigung gemessen wird.",
+    "var_type": "Frame"
+  },
+  {
+    "var_name": "$ACC_EXTAX[]",
+    "var_descr": "Beschleunigung der externen Achsen im Vorlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACC_EXTAX_C[]",
+    "var_descr": "Beschleunigung der externen Achsen im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACC_MA",
+    "var_descr": "Maximalwerte der Bahnbeschleunigung, Schwenkbeschleunigung und Drehbeschleunigung",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ACC_OV",
+    "var_descr": "Beschleunigungswerte bei Override -Änderungen",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ACCU_STATE",
+    "var_descr": "Ergebnis des Akku-Tests",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$ACT_ADVANCE",
+    "var_descr": "Aktuelle Anzahl der geplanten Bewegungssätze im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACT_BASE",
+    "var_descr": "Nummer des aktuellen Base -Systems",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACT_BASE_C",
+    "var_descr": "Nummer des aktuellen BASE-Koordinatensystems im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACT_EX_AX",
+    "var_descr": "Nummer der aktuellen externen Basis -Kinematik",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACT_TOOL",
+    "var_descr": "Nummer des aktuellen Tool -Koordinatensystems",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACT_TOOL_C",
+    "var_descr": "Nummer des aktuellen TOOL-Koordinatensystems im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ACT_VAL_DIF",
+    "var_descr": "Maximal zulässige Differenz der Geber -Istwerte beim Aus -/Einschalten der Steuerung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ADAP_ACC",
+    "var_descr": "Aktivieren der Beschleunigungsanpassung",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$ADVANCE",
+    "var_descr": "Angabe des Vorlaufes (max. 5 Bewegungssätze)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ALARM_STOP",
+    "var_descr": "Signalvereinbarung für die Kurzschlußbremsung (generatorischer Stopp)",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$ANA_DEL_FLT",
+    "var_descr": "Analog -Ausgangsfilter",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$ANIN[]",
+    "var_descr": "Analogeingänge",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$ANOUT[]",
+    "var_descr": "Analogausgänge",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$APO",
+    "var_descr": "Überschleifparameter im Vorlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$APO_C",
+    "var_descr": "Überschleifparameter im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$APO_DIS_PTP[]",
+    "var_descr": "Maximaler Überschleifweg  PTP -Achse[n]",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$ASYNC_AX",
+    "var_descr": "Verfahreingang für asynchrone Zusatzachsen E1  - E6 negativer oder positiver Ausrichtung",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$ASYNC_AXIS",
+    "var_descr": "Bit -Feld, um Zusatzachsen asynchron zu schalten",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ASYNC_FLT",
+    "var_descr": "Filter für asynchrone Zusatzachsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ASYNC_MODE",
+    "var_descr": "Mode für asynchrone Zusatzachsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ASYNC_OPT",
+    "var_descr": "Optionsflag für: “Asynchrone Achsen sind möglich”",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ASYNC_STATE",
+    "var_descr": "Aktueller Zustand der asynchronen Bewegungsausführung",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$ASYNC_T1_FAST",
+    "var_descr": "Steuerung der Geschwindigkeitsreduzierung im Test1 -Betrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ASYS",
+    "var_descr": "Belegung der Handverfahrtasten",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$AUT",
+    "var_descr": "Signalvereinbarung ”Betriebsart Automatik”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$AUX_POWER",
+    "var_descr": "Signalvereinbarung Externe Spannungsversorgung",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$AX_SIM_ON",
+    "var_descr": "Simulation des geschlossenen Drehzahlregelkreises für die einzel- nen Achsen im Office -Betrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$AXIS_ACT",
+    "var_descr": "Aktuelle achsspezifische Sollposition des Roboters",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_ACT_MEAS",
+    "var_descr": "Aktuelle achsspezifische Istposition des Roboters",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_ACTMOD",
+    "var_descr": "Anzeige der Achswinkel modulo 180°",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_BACK",
+    "var_descr": "Startposition des aktuellen Bewegungssatzes, achsspezifisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_CAL",
+    "var_descr": "Anzeige, ob Achse referenziert ist",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_DIR[]",
+    "var_descr": "Drehrichtung der Achse[n]",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$AXIS_FOR",
+    "var_descr": "Zielposition des aktuellen Bewegungssatzes, achsspezifisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_HOME[]",
+    "var_descr": "Definition der verschiedenen Home -Positionen",
+    "var_type": "Array"
+  },
+  {
+    "var_name": "$AXIS_INC",
+    "var_descr": "Inkrementelle Istwerte der Achsen",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_INT",
+    "var_descr": "Roboterposition zum Zeitpunkt eines Interrupts",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_JUS",
+    "var_descr": "Anzeige, ob Achse justiert ist",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_MOT",
+    "var_descr": "Aktuelle motorspezifische Roboterposition",
+    "var_type": "Sructure"
+  },
+  {
+    "var_name": "$AXIS_RESO",
+    "var_descr": "Auflösung des Meßsystems",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$AXIS_RET",
+    "var_descr": "Achsstellungen bei Verlassen der programmierten Bahn, achsspezifisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXIS_SEQ[]",
+    "var_descr": "Umordnung von Achse ... zu Achse ...",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$AXIS_TYPE[]",
+    "var_descr": "Achsenkennung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$AXWORKSPACE[]",
+    "var_descr": "Definition der achsspezifischen Arbeitsraumüberwachung",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$AXWORKSPACE_NAMEn[]",
+    "var_descr": "Bezeichnung des jeweiligen achsspezifischen Arbeitsraumes",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$B_IN[]",
+    "var_descr": "Wert eines binären Eingangs",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$B_OUT[]",
+    "var_descr": "Wert eines binären Ausgangs",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BASE",
+    "var_descr": "Verschiebung und Verdrehung des Basis -Koordinatensystems gegenüber dem Welt -Koordinatensystem im Vorlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$BASE_C",
+    "var_descr": "Verschiebung und Drehung des Basis -Koordinatensystems gegenüber dem Welt -Koordinatensystem im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$BASE_KIN",
+    "var_descr": "Externe Kinematik / Achsen in Base",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$BIN_IN[]",
+    "var_descr": "Konfiguration eines binären Eingangs",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$BIN_OUT",
+    "var_descr": "Konfiguration eines binären Ausgangs",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$BOUNCE_TIME",
+    "var_descr": "Prellzeit für EMT -Signale.",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BRAKE_SIG",
+    "var_descr": "Bitfeld für Achsbremsen, A1 ...  A6 sowie E1 ... E6",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BRAKES_OK",
+    "var_descr": "Flanke FALSE → TRUE: Aus dem vorhergehenden Bremsentest stand FALSE an. Der Bremsentest wurde erneut durchgeführt, und es wurde keine defekte Bremse ermittelt.",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$BRAKETEST_MONTIME",
+    "var_descr": "Roboter wurde aufgrund abgelaufener Monitoring-\nZeit angehalten. Die Quittiermeldung 27002 wird ausgegeben.",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$BRAKETEST_REQ_EX",
+    "var_descr": "Bremsentest wird extern angefordert",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$BRAKETEST_REQ_INT",
+    "var_descr": "Die Meldung 27004 steht an.\nDas Signal wird erst wieder FALSE, wenn ein Bremsentest\nmit positivem Ergebnis durchgeführt wurde, also mit der\nMeldung 27012.",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$BRAKETEST_WARN",
+    "var_descr": "Flanke FALSE → TRUE: Für mindestens 1 Bremse wurde ermittelt, dass die Verschleißgrenze erreicht ist. Gleichzeitig\nwird die Meldung 27001 ausgegeben.",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$BRAKETEST_WORK",
+    "var_descr": "Bremsentest wird gerade durchgeführt.",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$BRK_DEL_COM",
+    "var_descr": "Zeit, nach der die Achsbremsen nach erfolgter Positionierung beim Handverfahren geschlossen werden",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BRK_DEL_EX",
+    "var_descr": "Bremsverzögerungszeit für Zusatzachsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BRK_DEL_PRO",
+    "var_descr": "Zeit, nach der die Achsbremsen nach erfolgter Positionierung im Programm geschlossen werden",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BRK_MAX_TM",
+    "var_descr": "Maximale Bremszeit beim bahntreuen NOT -AUS",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BRK_MODE",
+    "var_descr": "Bremsensteuerungsmodus",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BRK_OPENTM",
+    "var_descr": "Zeitverzögerung der Sollwertausgabe, nach Öffnung der Achsbremsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$BUS_PAR",
+    "var_descr": "L2 -Busschnittstelle (KRC32)",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$CAB_FANSPEED",
+    "var_descr": "Geschwindigkeit des Schranklüfters (Außenlüfter)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$CABLE2_MON",
+    "var_descr": "Überwachung zusätzlicher Motorkabel",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$CAL_DIFF",
+    "var_descr": "Justageunterschied bei EMT -Justage mit Checkfahrt",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$CALP",
+    "var_descr": "Referenzpunktverschiebung  zwischen  mathematischem  Nullpunkt und Geber -Nullpunkt",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$CIRC_TYPE",
+    "var_descr": "Orientierungsführung bei CIRC -Sätzen im Vorlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$CIRC_TYPE_C",
+    "var_descr": "Orientierungsführung bei CIRC -Sätzen im Hauptlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$CMD",
+    "var_descr": "Anzeige der Zuordnungsnummer (Handle) für den Kommandokanal",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$COM_NAME",
+    "var_descr": "Kommando, welches beim nächsten Start abgearbeitet wird",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$COM_VAL_MI[]",
+    "var_descr": "Begrenzung der Soll -Drehzahl Achse[n]",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CONF_MESS",
+    "var_descr": "Signalvereinbarung ”Quittierungssmeldungen löschen”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$COSYS",
+    "var_descr": "Koordinatensystem im Handverfahren",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$COUNT_I[]",
+    "var_descr": "Frei verwendbare Ganzzahl -Variablen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$COUP_COMP[,]",
+    "var_descr": "Achskopplungsfaktoren",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$CP_VEL_TYPE",
+    "var_descr": "Reduzierung der CP -Bahngeschwindigkeit",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$CPVELREDMELD",
+    "var_descr": "Meldungsausgabe bei Reduzierung der Bahngeschwindigkeit",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CURR_ACT[]",
+    "var_descr": "Aktueller Strom der Achsen 1  - 12",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CURR_CAL",
+    "var_descr": "Stromkalibrierung im Powermodul",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CURR_COM_EX",
+    "var_descr": "Strombegrenzung für externe Achsen im Handverfahren",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CURR_LIM[]",
+    "var_descr": "Strombegrenzung an der Achse[n]",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$CURR_MAX",
+    "var_descr": "Maximaler Effektivstrom am Powermodulausgang",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CURR_MON[]",
+    "var_descr": "Zulässiger Nennstrom",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CURR_RED",
+    "var_descr": "Strombegrenzung der Achsen 1  - 12 in % vom maximalen Strom",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$CYCFLAG[]",
+    "var_descr": "Zyklische Flags",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$DATA_EXT_OBJx",
+    "var_descr": "Zähler für Datenpakete, die über ein externes Modul vom Typ LD_EXT_OBJ eintreffen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$DATA_INTEGRITY",
+    "var_descr": "Eine Variable vom Typ “Signal” wird entweder bit - oder gruppen- weise ausgegeben",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$DATA_SERx",
+    "var_descr": "Anzahl der gelesenen seriellen Empfangstelegramme im Puffer des Kanals x",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$DATAPATH[]",
+    "var_descr": "SRC -Name, auf dessen Variablen in der Datenliste mit Variablen- korrektur zugegriffen werden soll",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$DATE",
+    "var_descr": "Systemzeit und Systemdatum",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$DECEL_MB",
+    "var_descr": "Abbremszeit bei Drehzahlstop",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$DEF_A4FIX",
+    "var_descr": "Fixieren der Achse 4 beim Palettieren",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$DEF_FLT_CP",
+    "var_descr": "Default -Filter CP -Fahren",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$DEF_FLT_PTP",
+    "var_descr": "Default--Filter PTP--Fahren",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$DEF_L_CM",
+    "var_descr": "Schwerpunkt -Frame der Defaultmasse am Flansch im Flansch -Koordinatensystem",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$DEF_L_J",
+    "var_descr": "Default -Eigenträgheit der Last am Flansch im Default -Massenschwerpunkts -Koordinatensystem der Last",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$DEF_L_M",
+    "var_descr": "Defaultmasse der Last am Flansch",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$DEF_LA3_CM",
+    "var_descr": "Schwerpunkt -Frame der Defaultmasse der Zusatzlast auf der Achse 3 im Flansch -Koordinatensystem",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$DEF_LA3_J",
+    "var_descr": "Defaulteigenträgheit der Zusatzlast auf der Achse 3",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$DEF_LA3_M",
+    "var_descr": "Defaultmasse der Zusatzlast auf der Achse 3",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$DEF_OV_JOG",
+    "var_descr": "Vorgabewert für Override im Handbetrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$DEVICE",
+    "var_descr": "Bediengerätezustand",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$DH_4",
+    "var_descr": "Denavit -Hartenberg -Parameter der Hand (Frame zwischen A4 und A5)",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$DH_5",
+    "var_descr": "Denavit -Hartenberg -Parameter der Hand (Frame zwischen A5 und A6)",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$DIR_CAL",
+    "var_descr": "Festlegung der Referier -Richtung für jede Achse",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$DIRECTION",
+    "var_descr": "Richtung der Starttaste  - Programm wird entweder vorwärts oder rückwärts abgefahren.",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$DIS_WRP1",
+    "var_descr": "Mittlerer Abstand vom Handpunkt zur Singularität 1 (Alpha 1 -Singularität)",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$DIS_WRP2",
+    "var_descr": "Mittlerer Abstand vom Handpunkt zur Singularität 2",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$DISPLAY_REF",
+    "var_descr": "Formularneuausgabe bei Änderung von “$DISPLAY_VAR”",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$DIST_NEXT",
+    "var_descr": "Noch bis zum nächsten Punkt zurückzulegender Weg",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$DISTANCE",
+    "var_descr": "Bogenlänge CP -Bewegung",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$DRIVE_CART",
+    "var_descr": "Optionsbit: PTP -Punkte mit kartesischen Koordinaten",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$DRIVE_CP",
+    "var_descr": "Optionsbit: Kartesisches Fahren des Roboters möglich (LIN, CIRC)",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$DRIVES_OFF",
+    "var_descr": "Signalvereinbarung ”Antriebe AUS”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$DRIVES_ON",
+    "var_descr": "Signalvereinbarung ”Antriebe EIN”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$DSECHANNEL",
+    "var_descr": "Zuordnung der Achsen auf Kanäle der digitalen Servoelektronik (DSE)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$DYN_DAT[350]",
+    "var_descr": "Modelldaten des Roboters für Beschleunigungsanpassung, Höhe- res Fahrprofil und kinetische Energie",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$EMSTOP_ADAP",
+    "var_descr": "Modellbasierter NOT -AUS",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$EMSTOP_GEARTORQ[]",
+    "var_descr": "Maximales Getriebemoment beim NOT -AUS",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$EMSTOP_MOTTORQ[]",
+    "var_descr": "Maximales Motormoment beim NOT -AUS",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$EMSTOP_PATH",
+    "var_descr": "Projektierung des bahntreuen NOT -AUS für die Betriebsarten T1, T2, AUT, EX",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$EMSTOP_TIME",
+    "var_descr": "Zeitüberwachung für den bahntreuen NOT -AUS",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$EMSTOP_TORQRATE",
+    "var_descr": "Maximale Änderung der Motor - und Getriebemomente",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$EMT_MODE",
+    "var_descr": "Methode für die EMT -Justage",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ENDLESS",
+    "var_descr": "Flag für endlos drehende Achsen",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ENERGY_MON",
+    "var_descr": "Soll -Energieüberwachung (Kinetische Energie)",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ERROFFMASK",
+    "var_descr": "Abschaltung einzelner Fehlerbits",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ERSYSROOT",
+    "var_descr": "Auf Weltkoordinatensystem bezogene Verschiebung und Orientie- rung des Roboters bei vorhandenen Zusatzachsen",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$EX_AX_ASYNC",
+    "var_descr": "Zusatzachsen asynchron schalten",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$EX_AX_NUM",
+    "var_descr": "Anzahl externer Achsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$EX_KIN",
+    "var_descr": "Zuordnung externes Basis -Koordinatensystem  - Zusatzachsen -Kinematik",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$EXCOUP_COMP",
+    "var_descr": "Kopplungsfaktoren der Achsen 7 (Index 1) bis 12 (Index 6)",
+    "var_type": "Array"
+  },
+  {
+    "var_name": "$EXT",
+    "var_descr": "Signalvereinbarung “Betriebsart Extern”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$EXT_AXIS",
+    "var_descr": "Anzeige, ob Zusatzachsen vorhanden sind",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$EXT_START",
+    "var_descr": "Signalvereinbarung “Externer Start aktiv”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$EXTSTARTTYP",
+    "var_descr": "Flag für Automatikbetrieb ohne externe Signale",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$FAN_FOLLOW_UP_TIME",
+    "var_descr": "Signalvereinbarung “Lüfterüberwachung”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$FFC_TORQ",
+    "var_descr": "Momentenvorsteuerung",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$FFC_VEL",
+    "var_descr": "Geschwindigkeitsvorsteuerung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$FILTER",
+    "var_descr": "Weiche Rampe im Vorlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$FILTER_C",
+    "var_descr": "Weiche Rampe im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$FLAG[]",
+    "var_descr": "Flag 1 bis 1024 als globale Merker",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$FOL_ERR_MA",
+    "var_descr": "Faktor  für Schleppfehlerüberwachung",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$FOL_ERROR[]",
+    "var_descr": "Geschwindigkeitsbezogener Schleppfehler der Achse",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$G_COE_CUR[]",
+    "var_descr": "Proportionalverstärkung des Stromreglers",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$G_VEL_CAL[]",
+    "var_descr": "Geschwindigkeits -Faktor für Drehzahlreglerverstärkung",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$G_VEL_CP[]",
+    "var_descr": "Proportionalverstärkung des Drehzahlreglers beim CP -Fahren",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$G_VEL_PTP[]",
+    "var_descr": "Proportionalverstärkung des Drehzahlreglers beim PTP -Fahren",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$GEARTORQ_MON",
+    "var_descr": "Steuerung der Getriebe--Momentenüberwachung",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$H_POS",
+    "var_descr": "Home -Position des Roboters",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$H_POS_TOL",
+    "var_descr": "Zulässige Toleranz für ”Roboter in Home -Position”",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$HOME[3]",
+    "var_descr": "HOME -Verzeichniseinstellung des Compilers",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$HW_WARNING",
+    "var_descr": "Signalvereinbarung “Hardware -Warnung”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$HWEND",
+    "var_descr": "Signalvereinbarung “Endschalter überfahren”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$I_O_ACT",
+    "var_descr": "Signalvereinbarung “E/A -Schnittstellen aktiv”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$I_O_ACTCONF",
+    "var_descr": "Signalvereinbarung ”Externes Gerät aktiv”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$I_VEL_CP[]",
+    "var_descr": "Integral -Faktor des Drehzahlreglers beim CP -Fahren",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$I_VEL_PTP[]",
+    "var_descr": "Integral -Faktor des Drehzahlreglers beim PTP -Fahren",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$IBS_SLAVEIN[]",
+    "var_descr": "Vom Interbus -Slave belegte Steuerungeingangsworte",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$IBUS_OFF",
+    "var_descr": "Ausschalten alternativer Interbusgruppen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$IBUS_ON",
+    "var_descr": "Einschalten alternativer Interbusgruppen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$IDENT_OPT",
+    "var_descr": "Abfrage, ob Lastdatenermittlung durchführbar",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$IDENT_STARTP",
+    "var_descr": "Startposition für Lastdatenermittlung",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$IDENT_STATE",
+    "var_descr": "Status der Lastdatenermittlung",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$IN_HOME",
+    "var_descr": "Signalvereinbarung “Roboter in Home -Position”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$IN_POS_MA[]",
+    "var_descr": "Positionierfenster zur Schleppfehlerüberwachung",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$IN_STILL_MA",
+    "var_descr": "Faktor zur Berechnung des Stillstandsfensters",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$INC_EXTAX",
+    "var_descr": "Schrittmaß, achsspezifisch, für externe Achsen",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$INPOSITION",
+    "var_descr": "Bitfeld für “Achse in Position” aller Achsen A1 ... A6, E1 ... E6",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$INTERPRETER",
+    "var_descr": "Anwahl des Submit - oder Roboter -Interpreters",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$INTERRUPT",
+    "var_descr": "Programm bearbeitet Interrupt",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$IOSIM_OPT",
+    "var_descr": "Simulierung der Ein -/Ausgänge",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$IPO_MODE",
+    "var_descr": "Interpolationsart Vorlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$IPO_MODE_C",
+    "var_descr": "Interpolationsart Hauptlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$ITER",
+    "var_descr": "Anzahl der Iterationen für Bahnplanung bei aktivierter Beschleunigungsanpassung und höherem Fahrprofil",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$JUS_TOOL_NO",
+    "var_descr": "Nummer des aktuellen Werkzeugs bei EMT -Justage",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$KCP_CONNECT",
+    "var_descr": "Anzeige, ob KCP an der Steuerung angeschlossen ist",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$KEYMOVE",
+    "var_descr": "Zuordnung Handverfahrtasten  - Achsen",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$KINCLASS",
+    "var_descr": "Kinematik--Klassen",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$KPS_CURR_MAX[]",
+    "var_descr": "Maximalstrom eines KPS über 1 sec",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$KPS_CURR_RATED[]",
+    "var_descr": "Nennstrom KPS für die Zeitdauer von 60 Sekunden",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$KR_SERIALNO",
+    "var_descr": "Seriennummer des Roboters",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$KT_MOT",
+    "var_descr": "KT -Faktor der Motoren (Verhältnis zwischen Strom und Drehmo- ment)",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$KT0_MOT[]",
+    "var_descr": "KT0 -Faktor der Servomotoren (definiert im Arbeitspunkt mit Drehzahl=0)",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$L_EMT_MAX[]",
+    "var_descr": "Maximale Weglänge bei EMT -Justage",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$LAST_BUFFERING_NOTOK",
+    "var_descr": "Signalvereinbarung",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$LENGTH_A",
+    "var_descr": "Grundachslänge A, Exzentrizität von Achse 2 zur Achse 1",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$LENGTH_B",
+    "var_descr": "Grundachslänge B, Schwingenlänge",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$LG_CP",
+    "var_descr": "Proportionalverstärkung des Lagereglers für Bahnfahren",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$LG_PTP",
+    "var_descr": "Proportionalverstärkung des Lagereglers für  PTP -Fahren",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$LINE_SEL_OK",
+    "var_descr": "Anzeige, ob Satzanwahl erfolgte",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$LINE_SELECT",
+    "var_descr": "Editieren mit oder ohne implizierter Satzanwahl",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$LOOP_CONT",
+    "var_descr": "Simulationsergebnis für Schleifenabbruchbedingung",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$LOOP_MSG",
+    "var_descr": "Start Simulation, wenn Wert ungleich Leerstring",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$MAIN_AXIS",
+    "var_descr": "Grundachsen -Kennung",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$MAMES[]",
+    "var_descr": "Verschiebung zwischen mechanischem und mathematischem Nullpunkt der Achse n",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$MEAS_PULSE",
+    "var_descr": "Schnelles Messen aktivieren",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$MODE_MOVE",
+    "var_descr": "Verfahrart im Handbetrieb",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$MODE_OP",
+    "var_descr": "Anzeigen der aktuellen Betriebsart",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$MODEL_NAME",
+    "var_descr": "Robotertyp",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$MOUSE_ACT",
+    "var_descr": "Status der Space -Mouse",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$MOUSE_DOM",
+    "var_descr": "Modus für Space -Mouse Dominante Koordinaten / Alle Koordinaten",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$MOUSE_ROT",
+    "var_descr": "Space -Mouse  - Rotatorische Bewegungen  aktiv schalten",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$MOUSE_TRA",
+    "var_descr": "Space -Mouse  -  Translatorische Bewegungen aktiv schalten",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$MOVE_BCO",
+    "var_descr": "Satzkoinzidenzfahrt (SAK)",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$MOVE_ENA_ACK",
+    "var_descr": "Rückmeldung des Fahrfreigabesignals",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$MOVE_ENABLE",
+    "var_descr": "Signalvereinbarung ”Fahrfreigabe gesamt”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$MOVE_STATE",
+    "var_descr": "Aktueller Bewegungsstatus",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$MS_DA[]",
+    "var_descr": "Status der Lageregel -Überwachung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$MSG_T",
+    "var_descr": "Struktur für Meldungsausgabe",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$NEAR_POSRET",
+    "var_descr": "Roboter innerhalb einer Kugel um “$POS_RET” (Toleranzfenster)",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$NEARPATHTOL",
+    "var_descr": "Radius der Kugel um “$POS_RET”",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$NULLFRAME",
+    "var_descr": "Nullframe",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$NUM_AX",
+    "var_descr": "Anzahl der Roboterachsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$NUM_IN",
+    "var_descr": "Maximalzahl der digitalen Eingänge ($IN)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$NUM_OUT",
+    "var_descr": "Maximalzahl der digitalen Ausgänge ($OUT)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$NUMSTATE",
+    "var_descr": "Boolean",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ON_PATH",
+    "var_descr": "Signalvereinbarung “Bahnkontrolle” - Roboter befindet sich auf der programmierten Bahn.",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$OPT_MOVE",
+    "var_descr": "Aktivieren des höheren Fahrprofils",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$OPT_VAR_IDX",
+    "var_descr": "Index angewählter Korrektur -Variabler aus der Liste “$OPT_VAR[]”",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ORI_CHECK",
+    "var_descr": "Orientierungsprüfung an CP--Endpunkten (nur bei Fünfachs--Robotern)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ORI_TYPE",
+    "var_descr": "Orientierungsführung bei CP--Sätzen (LIN, CIRC) im Vorlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$ORI_TYPE_C",
+    "var_descr": "Orientierungsführung bei CP--Sätzen (LIN, CIRC) im Hauptlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$OUT[]",
+    "var_descr": "Ausgänge",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$OUT_C[]",
+    "var_descr": "Ausgänge Zum Setzen von Ausgängen bei Genauhaltbewegungen im Zielpunkt und bei Überschleifbewegungen im Scheitelpunkt.",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$OV_ASYNC",
+    "var_descr": "Override für asynchrone Zusatzachsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$OV_JOG",
+    "var_descr": "Einricht -Override",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$OV_PRO",
+    "var_descr": "Programm -Override",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$OV_PRO1",
+    "var_descr": "Steuerungsinterne Anwendung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$OV_ROB",
+    "var_descr": "Roboter -Override",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$OV_ROB1",
+    "var_descr": "Steuerungsinterne Anwendung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$PAL_MODE",
+    "var_descr": "Palettiermodus aktivieren",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$PERI_RDY",
+    "var_descr": "Signalvereinbarung “Antriebe EIN”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$PHGBRIGHT",
+    "var_descr": "Display -Kontrast einstellen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$PHGCONT",
+    "var_descr": "Einstellen des Display -Kontrastes",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$PHGINFO",
+    "var_descr": "Seriennummer der KCP -CPU und Software -Version",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$PHGTEMP",
+    "var_descr": "Aktuelle Temperatur im Inneren des KCP",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$PMCHANNEL[]",
+    "var_descr": "Zuordnung der Achsen auf die Antriebsschnittstellen im",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$POS_ACT",
+    "var_descr": "Aktuelle Roboterposition, kartesisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$POS_ACT_MES",
+    "var_descr": "Gemessene Istposition, kartesisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$POS_BACK",
+    "var_descr": "Startposition des aktuellen Bewegungssatzes, kartesisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$POS_FOR",
+    "var_descr": "Zielposition des aktuellen Bewegungssatzes, kartesisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$POS_INT",
+    "var_descr": "Position bei Auslösung des Interrupts, kartesisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$POS_RET",
+    "var_descr": "Position beim Verlassen der Bahn, kartesisch",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$POWER_FAIL",
+    "var_descr": "Anzeige Spannungsausfall",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$POWEROFF_DELAYTIME",
+    "var_descr": "Wartezeit zum Herunterfahren des Systems",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$PR_MODE",
+    "var_descr": "Signalvereinbarung ”Testbetriebsart”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$PRO_ACT",
+    "var_descr": "Signalvereinbarung “Programmstatus”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$PRO_I_O",
+    "var_descr": "Externes Programm für Steuerungsknoten",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$PRO_IP",
+    "var_descr": "Prozeßzeiger auf aktuellen KRL -Prozeß",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$PRO_MODE",
+    "var_descr": "Programmablaufart in Abhängigkeit von “$INTERPRETER”",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$PRO_MODE0",
+    "var_descr": "Prozeßlaufart des Submit -Interpreters",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$PRO_MODE1",
+    "var_descr": "Prozeßlaufart des Roboter -Interpreters",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$PRO_MOVE",
+    "var_descr": "Signalvereinbarung “Bewegungsstatus”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$PRO_NAME[]",
+    "var_descr": "Prozeßname in Abhängigkeit von “$INTERPRETER”",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$PRO_NAME0[]",
+    "var_descr": "Prozeßname des Submit -Interpreters",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$PRO_NAME1[]",
+    "var_descr": "Prozeßname des Roboter -Interpreters",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$PRO_START",
+    "var_descr": "START  - Programmbearbeitung / Kommandobearbeitung",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$PRO_STATE",
+    "var_descr": "Prozeßzustand in Abhängigkeit von “$INTERPRETER”",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$PRO_STATE0",
+    "var_descr": "Prozeßzustand des Submit -Interpreters",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$PRO_STATE1",
+    "var_descr": "Prozeßzustand des Roboter -Interpreters",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$PROG_EEPOT",
+    "var_descr": "Programmierung EE -Potentiometer DSE  - Eingabe Achsnummer",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$PROG_TORQ_MON",
+    "var_descr": "Soll -Momentenüberwachung",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$RAISE_T_MOT[]",
+    "var_descr": "Motor -Hochlaufzeit ohne Achsbelastung, Achsen 1 ... 12",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$RAISE_TIME[]",
+    "var_descr": "Achs -Hochlaufzeit, Achsen 1 ... 12",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$RAT_MOT_AX[]",
+    "var_descr": "Übersetzungsverhältnis (Motor : Achse), Achsen 1 ... 12",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RAT_MOT_ENC[]",
+    "var_descr": "Übersetzungsverhältnis (Motor : Drehgeber), Achsen 1 ... 12",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RC_RDY1",
+    "var_descr": "Signalvereinbarung “Bereit für Programm -Start”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$RCV_INFO",
+    "var_descr": "Version des Grundsystems",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$REBOOTDSE",
+    "var_descr": "Flag für Neuinitialisierung der digitalen Servoelektronik DSE",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$RED_ACC_AXC[]",
+    "var_descr": "Reduzierungsfaktor für axiale Beschleunigung bei achsspezifischem Handverfahren und Kommandobetrieb, Achsen 1 ... 12",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_ACC_CPC",
+    "var_descr": "Reduzierungsfaktor für Bahn - und Orientierungsbeschleunigungen bei kartesischem Handverfahren und Kommandobetrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_ACC_DYN",
+    "var_descr": "Reduzierungsfaktor für Beschleunigung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_ACC_EMX",
+    "var_descr": "Reduzierungsfaktor für bahntreue NOT -AUS Rampe",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_ACC_OV[]",
+    "var_descr": "Reduzierung der Beschleunigung für Override -Änderungen, Achsen 1 ... 12",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_CAL_SD",
+    "var_descr": "Reduzierungsfaktor der Geschwindigkeit beim Referenzieren nach dem Erreichen des Referenzpunktnockens",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_CAL_SF",
+    "var_descr": "Reduzierungsfaktor der Geschwindigkeit beim Referenzieren vor dem Erreichen des Referenzpunktnockens",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_JUS_UEB",
+    "var_descr": "Reduzierungsfaktor für Übernahmefahrt",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$RED_T1",
+    "var_descr": "Reduzierungsfaktor bei T1 -Betrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_T1_OV_CP",
+    "var_descr": "Art der Reduzierung der Bahngeschwindigkeit bei CP -Bewegungen im T1 -Betrieb",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$RED_VEL",
+    "var_descr": "Reduzierungsfaktor für Programm im Vorlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_VEL_AXC[]",
+    "var_descr": "Reduzierungsfaktor für axiale Geschwindigkeit bei achsspezifischem Handverfahren und Kommandobetrieb (PTP)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_VEL_C",
+    "var_descr": "Reduzierungsfaktor für Programm im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RED_VEL_CPC",
+    "var_descr": "Reduzierungsfaktor für Bahn -, Schwenk - und Drehgeschwindigkeit bei kartesischem Handverfahren und Kommandobetrieb (CP)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$REVO_NUM[]",
+    "var_descr": "Umdrehungszähler bei Endlosachsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$RINT_LIST",
+    "var_descr": "Liste der Interrupts auf Roboterebene",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ROB_CAL",
+    "var_descr": "Signalvereinbarung ”Referier -Status”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$ROB_STOPPED",
+    "var_descr": "Signalvereinbarung “Bewegungskontrolle”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$ROB_TIMER",
+    "var_descr": "Taktgeber",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ROBROOT",
+    "var_descr": "Lage des Roboters im Welt -Koordinatensystem",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ROBROOT_C",
+    "var_descr": "Lage des Roboterfußpunkts im Welt -Koordinatensystem im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ROBROOT_KIN",
+    "var_descr": "Name der externen Robroot -Kinematik",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$ROBRUNTIME",
+    "var_descr": "Betriebszeitzähler",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ROBTRAFO",
+    "var_descr": "Robotername",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$ROTSYS",
+    "var_descr": "Rotationsbezugssystem bei Relativsätzen im Vorlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$ROTSYS_C",
+    "var_descr": "Rotationsbezugssystem bei Relativsätzen im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SAFEGATE_OP",
+    "var_descr": "Auslösen eines bahntreuen Stopps bei Bedienerschutzverletzung",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$SAFETY_SW",
+    "var_descr": "Status der Zustimmschalter (gültig ab KSS 6.0)",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$SEN_DEL[]",
+    "var_descr": "Zurückgelegter Weg während der Signallaufzeit im EMT -Taster",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SEQ_CAL",
+    "var_descr": "Referier -Reihenfolge der Achsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SERV_OFF_TM[]",
+    "var_descr": "Zeit, in der Achsregelung und Achsbremse überlappen, um die Achse sicher zu fixieren",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SERVOPARA",
+    "var_descr": "Online -Änderung von Servoparametern",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SET_IO_SIZE",
+    "var_descr": "Legt die Anzahl der maximal verwendbaren Ein -/Ausgänge fest",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SIMULATE",
+    "var_descr": "Standpunkt des Beobachters mit 6D -Mouse simulieren (AnySim)",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$SINGUL_ERR_JOG",
+    "var_descr": "Maximaler Orientierungsfehler für singularitätenfreies Fahren im Handbetrieb",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SINGUL_ERR_PRO",
+    "var_descr": "Maximaler Orientierungsfehler für singularitätenfreies Fahren im Automatik -Betrieb",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SINGUL_POS[1]",
+    "var_descr": "Verhalten von Achse 1 im Fall einer Überkopf -Singularität",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SINGUL_POS[2]",
+    "var_descr": "Verhalten von Achse 2 im Fall einer Strecklagen -Singularität (a2 -Stellung)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SINGUL_POS[3]",
+    "var_descr": "Verhalten von Achse 4 im Fall einer Handachsen -Singularität (a5 -Stellung)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SINGUL_STRATEGY",
+    "var_descr": "Strategie für singularitätenfreies Fahren",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SINT_LIST",
+    "var_descr": "Liste der Interrupts auf Submit -Ebene",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SLAVE_AXIS_INC",
+    "var_descr": "Istposition von Master -/Slave -Achsen in Inkrementen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SOFTN_END[]",
+    "var_descr": "Lage der Software -Endschalter am negativen Achsende (Achsen 1 ... 12)",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$SOFTP_END[]",
+    "var_descr": "Lage der Software -Endschalter am positiven Achsende",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$SOFTPLCBOOL[]",
+    "var_descr": "Datenaustausch zwischen KRC und SoftPLC",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$SOFTPLCINT[]",
+    "var_descr": "Datenaustausch zwischen KRC und SoftPLC",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SOFTPLCREAL[]",
+    "var_descr": "Datenaustausch zwischen KRC und SoftPLC",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$SPC_KIN",
+    "var_descr": "Daten für Sonderkinematiken",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$SPIN_A",
+    "var_descr": "Beschreibung des Spindelantriebs",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SPIN_B",
+    "var_descr": "Beschreibung des Spindelantriebs",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SPIN_C",
+    "var_descr": "Beschreibung des Spindelantriebs",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$SPINDLE",
+    "var_descr": "Spindeln",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$SS_MODE",
+    "var_descr": "Signalvereinbarung “Betriebsart Einzelschritt”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$ST_TOL_TIME",
+    "var_descr": "Erkennungszeit Stillstand",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$ST_TOL_VEL[]",
+    "var_descr": "Geschwindigkeitsgrenze für Erkennung Stillstand",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$STOPMB_ID",
+    "var_descr": "Kennung der Mailbox für Stoppmeldungen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$STOPMESS",
+    "var_descr": "Signalvereinbarung “Stopp -Meldung”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$STOPNOAPROX",
+    "var_descr": "Meldung “Überschleifen nicht möglich” mit oder ohne Quittierung",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$SYNC",
+    "var_descr": "Erzeugen phasensynchroner Profile",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$T1",
+    "var_descr": "Signalvereinbarung “Betriebsart TEST 1”  - “T 1”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$T2",
+    "var_descr": "Signalvereinbarung “Betriebsart TEST 2”  - “T 2”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$T2_OUT_WARNING",
+    "var_descr": "Warnung bei Betriebsartwechsel auf “T2” oder “AUT”",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$T2_OV_REDUCE",
+    "var_descr": "Reduzieren des Overrides bei Umschalten nach “T2”",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$TARGET_STATUS",
+    "var_descr": "Auswahl Status Bewegung Start  - Zielpunkt",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$TC_SYM",
+    "var_descr": "Zeitkonstante Symmetrierfilter",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$TCP_IPO",
+    "var_descr": "Flag für Modus “TCP -bezogene Interpolation”",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$TECH",
+    "var_descr": "Funktionsparameter für Funktionsgenerator im Vorlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$TECH_ANA_FLT_OFF[]",
+    "var_descr": "Analog -Ausgangsfilter für Techval deaktivieren",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$TECH_C",
+    "var_descr": "Funktionsparameter für Funktionsgenerator im Hauptlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$TECH_FUNC",
+    "var_descr": "Funktionalitätsbits für den Funktionsgenerator",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TECH_MAX",
+    "var_descr": "Maximalzahl der Funktionsgeneratoren",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TECH_OPT",
+    "var_descr": "Optionsbit für den Funktionsgenerator",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$TECHANGLE",
+    "var_descr": "Drehung des Technologiedreibeins im Vorlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TECHANGLE_C",
+    "var_descr": "Drehung des Technologiedreibeins im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TECHIN",
+    "var_descr": "Eingangswert für Funtionsgenerator",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$TECHPAR",
+    "var_descr": "Parametrierung des Funktionsgenerators im Vorlauf",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$TECHPAR_C",
+    "var_descr": "Parametrierung des Funktionsgenerators im Hauptlauf",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$TECHSYS",
+    "var_descr": "Technologiedreibein im Vorlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$TECHSYS_C",
+    "var_descr": "Technologiedreibein im Hauptlauf",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$TECHVAL",
+    "var_descr": "Funktionswert für Funktionsgenerator",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$TFLWP",
+    "var_descr": "Verschiebung zwischen Flanschpunkt und Handpunkt -Koordina- tensystem",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TIME_POS[]",
+    "var_descr": "Achs -Positionierzeit",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TIMER[]",
+    "var_descr": "Timer",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TIMER_FLAG[]",
+    "var_descr": "Anzeige Timer  größer oder gleich Null",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$TIMER_STOP[]",
+    "var_descr": "Starten und Stoppen des Timers",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$TIRORO",
+    "var_descr": "Verschiebung zwischen internem Roboter -Koordinatensystem und aktuellem Roboter -Koordinatensystem",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TL_COM_VAL",
+    "var_descr": "Toleranzzeit nach Überschreitung der Soll -Drehzahl -Begrenzung",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TM_CON_VEL",
+    "var_descr": "Definition einer minimalen Konstantfahrphase",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TOOL",
+    "var_descr": "Werkzeug -Koordinatensystem relativ zum Flansch - Koordinatensystem im Vorlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TOOL_C",
+    "var_descr": "Werkzeug -Koordinatensystem relativ zum Flansch - Koordinatensystem im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TOOL_KIN",
+    "var_descr": "Name der externen TOOL -Kinematik",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$TORQ_DIFF[]",
+    "var_descr": "Maximale Momentenabweichung der einzelnen Achsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TORQ_VEL[]",
+    "var_descr": "Geschwindigkeitsgrenze zur Überwachung der momenten -",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$TORQMON[]",
+    "var_descr": "Momentenüberwachungsschlauch im Programmbetrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TORQMON_COM[]",
+    "var_descr": "Momentenüberwachungsschlauch im Kommandobetrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TORQMON_COM_DEF[]",
+    "var_descr": "Vorgabewerte für den Momentenüberwachungsschlauch im Kommandobetrieb",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TORQMON_DEF[]",
+    "var_descr": "Default -Vorgabewerte für den Momentenüberwachungsschlauch",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TORQMON_TIME",
+    "var_descr": "Ansprechzeit der Fahrmomentenüberwachung",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$TORQUE_AXIS",
+    "var_descr": "Achse in Position, wenn Sollwert erreicht  - A1 ... A6, E1 ... E6",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TOUCH_ACC",
+    "var_descr": "Rückzugsbeschleunigung für Touch -Sensor",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TOUCH_SVEL",
+    "var_descr": "Startgeschwindigkeit Touch -Sensor",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TOUCH_VEL",
+    "var_descr": "Maximale Rückfahrgeschwindigkeit des Touch -Sensors",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TRACE",
+    "var_descr": "Parameter für Trace -Funktion",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TRAFO_AXIS",
+    "var_descr": "Anzahl der transformierten Achsen",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$TRAFONAME",
+    "var_descr": "Name der Koordinatentransformation",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$TRANSSYS",
+    "var_descr": "Translations -Bezugssystem",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$TRP_A",
+    "var_descr": "Trapezverbindung bei den Achsantrieben",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TSYS",
+    "var_descr": "Aktuelles Technologiedreibein in Bezug auf das Basis -Koordinatensystem",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$TURN",
+    "var_descr": "Drehjustage aktiv",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$TX3P3",
+    "var_descr": "Verschiebung der Roboterhand, ausgehend von Achse 3",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$USER_SAF",
+    "var_descr": "Signalvereinbarung “Schutzgitterabfrage”",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$V_CUSTOM",
+    "var_descr": "Versionskennung der Datei “$Custom.dat”",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$V_OPTION",
+    "var_descr": "Versionskennung der Datei “$Option.dat”",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$V_R1MADA",
+    "var_descr": "Versionskennung Maschinendaten im Verzeichnis R1",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$V_ROBCOR",
+    "var_descr": "Versionskennung der Datei “Robcor.dat”",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$V_STEUMADA",
+    "var_descr": "Versionskennung der Datei “$machine.dat” im Verzeichnis \\Steu",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$VEL",
+    "var_descr": "Geschwindigkeiten im Vorlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$VEL_ACT",
+    "var_descr": "Aktuelle Bahngeschwindigkeit",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$VEL_ACT_MA",
+    "var_descr": "Grenzwert der axialen Sollgeschwindigkeit",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$VEL_AX_JUS[]",
+    "var_descr": "Geschwindigkeit der einzelnen Achsen bei EMT -Justage",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$VEL_AXIS[]",
+    "var_descr": "Geschwindigkeit der Achsen im Vorlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$VEL_AXIS_ACT[]",
+    "var_descr": "Aktuelle Achsgeschwindigkeit im Verhältnis zur Maximalgeschwin-",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$VEL_AXIS_C[]",
+    "var_descr": "Geschwindigkeit der Achsen im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$VEL_AXIS_MA[]",
+    "var_descr": "Nenndrehzahl der Motoren der einzelnen Achsen",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$VEL_C",
+    "var_descr": "Geschwindigkeiten im Hauptlauf",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$VEL_CP_COM",
+    "var_descr": "Reduzierungsfaktor für die Flanschgeschwindigkeit bei Umorientierungsbewegungen des Werkzeugs",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$VEL_CP_T1",
+    "var_descr": "Bahngeschwindigkeit im Test -1 -Betrieb",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$VEL_ENC_CO",
+    "var_descr": "Drehzahl -Sollwertschwelle für Geberüberwachung (Wandler -Inkrement)",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$VEL_EXTAX[]",
+    "var_descr": "Achsgeschwindigkeit der Zusatzachsen im Vorlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$VEL_EXTAX_C[]",
+    "var_descr": "Achsgeschwindigkeit der Zusatzachsen im Hauptlauf",
+    "var_type": "Integer"
+  },
+  {
+    "var_name": "$VEL_FILT[]",
+    "var_descr": "Tacho -Filter",
+    "var_type": "Real"
+  },
+  {
+    "var_name": "$VEL_FLT_OFF",
+    "var_descr": "Berechnung der Geschwindigkeit aus gefilterten oder ungefilterten Sollwerten",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$VEL_MA",
+    "var_descr": "Daten für maximale Bahn -, Schwenk - und Drehgeschwindigkeit",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$WAIT_FOR[]",
+    "var_descr": "Warten des Interpreters an einer WAIT -FOR -Anweisung",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$WAIT_FOR_ON",
+    "var_descr": "Warten des Interpreters an einer Bedingung",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$WBOXDISABLE",
+    "var_descr": "Arbeitsraumüberwachung ein - oder ausgeschaltet",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$WORKSPACE[]",
+    "var_descr": "Definition der Arbeitsraumüberwachung",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$WORKSPACE_NAME[]",
+    "var_descr": "Bezeichnung des jeweiligen Arbeitsraumes",
+    "var_type": "Character"
+  },
+  {
+    "var_name": "$WORLD",
+    "var_descr": "Welt -Koordinatensystem relativ zum Initial -Koordinatensystem",
+    "var_type": "Structure"
+  },
+  {
+    "var_name": "$WRIST_AXIS",
+    "var_descr": "Handachsenkennung",
+    "var_type": "Enum"
+  },
+  {
+    "var_name": "$WS_OV_RED",
+    "var_descr": "Reduzierfaktor für die kleinste überwachte Geschwindigkeitsgrenze in Prozent",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$WS_VEL_RED",
+    "var_descr": "Aktivieren der Override-Reduzierung für Geschwindigkeitsgrenzen",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$WS_WORKSPACE_RED",
+    "var_descr": "Aktivieren der Override-Reduzierung vor Raumgrenzen",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ZERO_MOVE",
+    "var_descr": "Ausführung eines Bewegungsnullsatzes",
+    "var_type": "Boolean"
+  },
+  {
+    "var_name": "$ZUST_ASYNC",
+    "var_descr": "Freigabe asynchroner Zusatzachsen",
+    "var_type": "Signalvereinbarung"
+  },
+  {
+    "var_name": "$IN[]",
+    "var_descr": "Eingänge",
+    "var_type": ""
+  },
+  {
+    "var_name": "$IN_HOME1",
+    "var_descr": "Signalvereinbarung “Roboter in Home1 -Position”",
+    "var_type": ""
+  },
+  {
+    "var_name": "$IN_HOME2",
+    "var_descr": "Signalvereinbarung “Roboter in Home2 -Position”",
+    "var_type": ""
+  },
+  {
+    "var_name": "$IN_HOME3",
+    "var_descr": "Signalvereinbarung “Roboter in Home3 -Position”",
+    "var_type": ""
+  },
+  {
+    "var_name": "$IN_HOME4",
+    "var_descr": "Signalvereinbarung “Roboter in Home4 -Position”",
+    "var_type": ""
+  },
+  {
+    "var_name": "$IN_HOME5",
+    "var_descr": "Signalvereinbarung “Roboter in Home5 -Position”",
+    "var_type": ""
+  }
+]
