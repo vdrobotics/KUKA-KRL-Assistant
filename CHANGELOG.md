@@ -4,11 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [1.8.1] - 2026-05-28
-### Changed
-- `kukaKrl.validation.undeclaredIdentifiers` is now enabled by default and no longer marked experimental. It still emits Information-severity diagnostics for identifiers not found in the current KRL workspace index.
-- Renamed the settings category title from "KUKA KRL Assistant" to "KUKA KRL Edit".
+## [1.8.2] - 2026-05-31
+### Added
+- Bundled index of KUKA `$`-system variables (`server/data/system_vars.json`, ~445 entries). Typing `$` now offers system-variable completions (with data type and description), and hovering over a `$`-variable shows its type and description.
 
+### Changed
+- `kukaKrl.validation.undeclaredIdentifiers` is now enabled by default and no longer marked experimental. It still emits Information-severity diagnostics for identifiers not found in the current KRL workspace index. (`$`-system variables, `#`-enums and `.`-subvariables remain exempt, so an incomplete system-variable index never causes false "undeclared" warnings.)
+- Renamed the settings category title from "KUKA KRL Assistant" to "KUKA KRL Edit".
+- Normalized the system-variable index: consistent data types (`Integer`, `Real`, `Boolean`, `Structure`, `Frame`, `Enum`, `Signal`, `Array`, `Character`) and cleaned-up descriptions (OCR artefacts, stray quotes and split compound words).
+- Migrated the TypeScript build to `module`/`moduleResolution` `node16` (the deprecated `node`/`node10` resolution is removed in TypeScript 7.0). CommonJS output is unchanged.
+
+### Fixed
+- Resolved the deprecation error reported for `"moduleResolution": "node"` in `client/tsconfig.json` / `server/tsconfig.json`.
+
+---
+
+## [1.8.1] - 2026-05-28
 ### Fixed
 - Function-name lookup now compares names case-insensitively and ignores whitespace during matching, so `DEF`/`DEFFCT` declarations, hover, go-to-definition, and undeclared-identifier validation use the same KRL-style lookup behavior.
 - Escaped symbol names in reference and declaration lookups before building regular expressions.

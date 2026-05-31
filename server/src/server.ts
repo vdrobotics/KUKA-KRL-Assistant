@@ -15,6 +15,7 @@ import {
   CompletionParams,
   CompletionItem,
   InsertTextFormat,
+  TextEdit,
   DocumentSymbol,
   DocumentSymbolParams,
   SymbolKind,
@@ -95,6 +96,36 @@ const serverValidationConfig = {
   undeclaredIdentifiers: true,
 };
 
+// KUKA $-system variables, loaded once from server/data/system_vars.json.
+interface SystemVariable {
+  var_name: string;
+  var_descr: string;
+  var_type: string;
+}
+let systemVariables: SystemVariable[] = [];
+// Keyed by uppercased base name (leading '$', trailing array brackets stripped) for case-insensitive lookup.
+const systemVariableMap: Map<string, SystemVariable> = new Map();
+
+function systemVariableKey(name: string): string {
+  return name.replace(/\[.*$/, '').trim().toUpperCase();
+}
+
+function loadSystemVariables(): void {
+  const dataPath = path.join(__dirname, '..', 'data', 'system_vars.json');
+  try {
+    systemVariables = JSON.parse(fs.readFileSync(dataPath, 'utf8')) as SystemVariable[];
+  } catch (err) {
+    systemVariables = [];
+    logToFile(`Failed to load system variables from ${dataPath}: ${err}`);
+    return;
+  }
+
+  systemVariableMap.clear();
+  for (const sv of systemVariables) {
+    systemVariableMap.set(systemVariableKey(sv.var_name), sv);
+  }
+}
+
 connection.onNotification(
   'custom/setValidationConfig',
   (cfg: { defdatPublicGlobalRequired?: boolean; defdatNonPublicGlobalForbidden?: boolean; undeclaredIdentifiers?: boolean }) => {
@@ -150,6 +181,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
     fs.unlinkSync(logFile);
   }
 
+  loadSystemVariables();
+
   // Return server capabilities
   return {
     capabilities: {
@@ -161,7 +194,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       foldingRangeProvider: true,
       completionProvider: {
         triggerCharacters: [
-          '.', '(', ',', ' ', '=', '+', '-', '*', '/', '<', '>', '!',
+          '.', '(', ',', ' ', '=', '+', '-', '*', '/', '<', '>', '!', '$',
           ...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
         ]
       }
@@ -471,6 +504,17 @@ connection.onHover(async (params) => {
   const lines = doc.getText().split(/\r?\n/);
   const lineText = lines[params.position.line];
 
+  // System variable hover ($...): show type and description from the bundled index.
+  const systemVar = getSystemVariableAtPosition(lineText, params.position.character);
+  if (systemVar) {
+    return {
+      contents: {
+        kind: 'markdown',
+        value: `**${systemVar.var_name}** — *${systemVar.var_type}*\n\n${systemVar.var_descr}`
+      }
+    };
+  }
+
   if (/^\s*(GLOBAL\s+)?(DEF|DEFFCT|DECL|SIGNAL|STRUC)\b/i.test(lineText)) return;
 
   const functionName = getWordAtPosition(lineText, params.position.character)?.word;
@@ -534,6 +578,25 @@ connection.onCompletion(async (params: CompletionParams): Promise<CompletionItem
 
     // Only return struct completions after dot
     return structItems;
+  }
+
+  // === 1b. System variable completions (after '$') ===
+  const dollarMatch = textBefore.match(/\$\w*$/);
+  if (dollarMatch) {
+    const startChar = params.position.character - dollarMatch[0].length;
+    const replaceRange = Range.create(
+      params.position.line, startChar,
+      params.position.line, params.position.character
+    );
+    return systemVariables.map(sv => ({
+      label: sv.var_name,
+      kind: CompletionItemKind.Variable,
+      detail: sv.var_type,
+      documentation: sv.var_descr,
+      textEdit: TextEdit.replace(replaceRange, sv.var_name),
+      filterText: sv.var_name,
+      sortText: sv.var_name
+    }));
   }
 
   // === 2. Function completions ===
@@ -910,6 +973,20 @@ function findEnclosuresLines(lineNumber: number, lines: string[]): EnclosuresLin
 /**
  * Extract the word at a given character position in a line.
  */
+
+// Match a $-prefixed system variable token at the cursor, e.g. $POS_ACT, $ACC_AXIS.
+function getSystemVariableAtPosition(lineText: string, character: number): SystemVariable | undefined {
+  const tokenRegex = /\$\w+/g;
+  let match: RegExpExecArray | null;
+  while ((match = tokenRegex.exec(lineText)) !== null) {
+    const start = match.index;
+    const end = start + match[0].length;
+    if (character >= start && character <= end) {
+      return systemVariableMap.get(systemVariableKey(match[0]));
+    }
+  }
+  return undefined;
+}
 
 function getWordAtPosition(lineText: string, character: number): WordInfo | undefined {
   const wordMatch = lineText.match(/\b(\w+)\b/g);
