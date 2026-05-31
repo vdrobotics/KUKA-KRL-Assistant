@@ -2,8 +2,9 @@
   "name": "kuka-krl-edit",
   "displayName": "KUKA KRL Edit",
   "description": "Language features for KUKA KRL",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "publisher": "VDRobotics",
+  "icon": "media/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/vdrobotics/KUKA-KRL-Edit"
@@ -45,7 +46,7 @@
       }
     ],
     "configuration": {
-      "title": "KUKA KRL Assistant",
+      "title": "KUKA KRL Edit",
       "properties": {
         "kukaKrl.validation.variableNameLength": {
           "type": "boolean",
@@ -59,8 +60,8 @@
         },
         "kukaKrl.validation.undeclaredIdentifiers": {
           "type": "boolean",
-          "default": false,
-          "description": "Information diagnostic for identifiers that are not declared in the current KRL workspace index. Experimental and disabled by default."
+          "default": true,
+          "description": "Information diagnostic for identifiers that are not declared in the current KRL workspace index."
         },
         "kukaKrl.validation.globalUsage": {
           "type": "boolean",
@@ -70,7 +71,7 @@
         "kukaKrl.validation.defdatPublicGlobalRequired": {
           "type": "boolean",
           "default": true,
-          "description": "Warning when a DECL/SIGNAL/STRUC inside DEFDAT … PUBLIC is missing the GLOBAL modifier."
+          "description": "Warning when a DECL/SIGNAL/STRUC inside DEFDAT ... PUBLIC is missing the GLOBAL modifier."
         },
         "kukaKrl.validation.defdatNonPublicGlobalForbidden": {
           "type": "boolean",

@@ -40,6 +40,7 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 // Global state variables
 let workspaceRoot: string | null = null;
+let workspaceRoots: string[] = [];
 const fileVariablesMap: Map<string, VariableInfo[]> = new Map();
 const logFile = path.join(__dirname, 'krl-server.log');
 let logMsg="";
@@ -82,15 +83,16 @@ interface EnclosuresLines {
 let variableStructTypes: VariableToStructMap = {};
 let structDefinitions: StructMap = {};
 let functionsDeclared: FunctionDeclaration[] = [];
+let functionsDeclaredByRoot: Map<string, FunctionDeclaration[]> = new Map();
 let mergedVariables :VariableInfo[] = [];
-let workspaceDeclaredNameCache: Set<string> | undefined;
+let workspaceDeclaredNameCacheByRoot: Map<string, Set<string>> = new Map();
 
 // Server-side validation toggles, pushed by the client via 'custom/setValidationConfig'.
 // Defaults match package.json: all checks on.
 const serverValidationConfig = {
   defdatPublicGlobalRequired: true,
   defdatNonPublicGlobalForbidden: true,
-  undeclaredIdentifiers: false,
+  undeclaredIdentifiers: true,
 };
 
 connection.onNotification(
@@ -137,7 +139,11 @@ const CODE_KEYWORDS = [
 // =======================
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
-  workspaceRoot = params.rootUri ? URI.parse(params.rootUri).fsPath : null;
+  workspaceRoots = params.workspaceFolders?.map(folder => URI.parse(folder.uri).fsPath) ?? [];
+  if (workspaceRoots.length === 0 && params.rootUri) {
+    workspaceRoots = [URI.parse(params.rootUri).fsPath];
+  }
+  workspaceRoot = workspaceRoots[0] ?? null;
 
   // Debug: Delete old log file if exists
   if (fs.existsSync(logFile)) {
@@ -167,32 +173,25 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
   
 
 connection.onInitialized(async () => {
-  if (!workspaceRoot) return;
+  if (workspaceRoots.length === 0) return;
 
-  const files = getAllDatFiles(workspaceRoot);
+  for (const root of workspaceRoots) {
+    const files = getAllDatFiles(root);
 
-  // Step 1: Collect variables from all .dat files
-  for (const filePath of files) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const uri = URI.file(filePath).toString();
+    for (const filePath of files) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const uri = URI.file(filePath).toString();
 
-    const collector = new DeclaredVariableCollector();
-    collector.extractFromText(content);
-    fileVariablesMap.set(uri, collector.getVariables());
-    functionsDeclared = await getAllFunctionDeclarations();
-    //logToFile(`Extracted functions from : ${JSON.stringify(functionsDeclared, null, 2)}`);
+      const collector = new DeclaredVariableCollector();
+      collector.extractFromText(content);
+      fileVariablesMap.set(uri, collector.getVariables());
+    }
+
+    functionsDeclaredByRoot.set(root, getAllFunctionDeclarations(root));
   }
 
-  // Step 2: Merge and log variables for all files
+  functionsDeclared = Array.from(functionsDeclaredByRoot.values()).flat();
   mergedVariables = mergeAllVariables(fileVariablesMap);
-  //logToFile(`Merged variables: ${JSON.stringify(mergedVariables, null, 2)}`);
-
-  // Step 3: Optionally validate each file with merged variables (commented out)
-  for (const filePath of files) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const uri = URI.file(filePath).toString();
-
-  }
 });
 
 // ==========================
@@ -201,7 +200,7 @@ connection.onInitialized(async () => {
 
 documents.onDidChangeContent(async change => {
   const { document } = change;
-  workspaceDeclaredNameCache = undefined;
+  invalidateWorkspaceCachesForDocument(document.uri);
 
   extractStrucVariables(document.getText());
 
@@ -218,7 +217,7 @@ documents.onDidChangeContent(async change => {
 
 documents.onDidOpen(change => {
   const { document } = change;
-  workspaceDeclaredNameCache = undefined;
+  invalidateWorkspaceCachesForDocument(document.uri);
 
   const collector = new DeclaredVariableCollector();
   collector.extractFromText(document.getText());
@@ -233,6 +232,74 @@ documents.onDidOpen(change => {
 // ===================
 // File and Variables Utilities
 // ===================
+
+
+function normalizeFunctionName(name: string): string {
+  return name.replace(/\s+/g, '').toLowerCase();
+}
+
+function indexOfIdentifierIgnoreCase(text: string, identifier: string): number {
+  return text.toLowerCase().indexOf(identifier.toLowerCase());
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getWorkspaceRootForUri(uri: string): string | null {
+  let fsPath: string;
+  try {
+    fsPath = URI.parse(uri).fsPath;
+  } catch {
+    fsPath = uri;
+  }
+
+  const roots = workspaceRoots.length > 0 ? workspaceRoots : (workspaceRoot ? [workspaceRoot] : []);
+  const matchingRoots = roots.filter(root => isPathInsideOrEqual(fsPath, root));
+  matchingRoots.sort((a, b) => b.length - a.length);
+  return matchingRoots[0] ?? workspaceRoot;
+}
+
+function isPathInsideOrEqual(filePath: string, rootPath: string): boolean {
+  const resolvedFile = path.resolve(filePath).toLowerCase();
+  const resolvedRoot = path.resolve(rootPath).toLowerCase();
+  const relative = path.relative(resolvedRoot, resolvedFile);
+  return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+function invalidateWorkspaceCachesForDocument(uri: string): void {
+  const root = getWorkspaceRootForUri(uri);
+  if (!root) {
+    workspaceDeclaredNameCacheByRoot.clear();
+    functionsDeclaredByRoot.clear();
+    functionsDeclared = [];
+    return;
+  }
+
+  workspaceDeclaredNameCacheByRoot.delete(root);
+  functionsDeclaredByRoot.set(root, getAllFunctionDeclarations(root));
+  functionsDeclared = Array.from(functionsDeclaredByRoot.values()).flat();
+}
+
+function getMergedVariablesForRoot(root: string): VariableInfo[] {
+  const scopedMap = new Map<string, VariableInfo[]>();
+  for (const [uri, variables] of fileVariablesMap.entries()) {
+    if (getWorkspaceRootForUri(uri) === root) {
+      scopedMap.set(uri, variables);
+    }
+  }
+  return mergeAllVariables(scopedMap);
+}
+
+function getFunctionsForRoot(root: string): FunctionDeclaration[] {
+  let declarations = functionsDeclaredByRoot.get(root);
+  if (!declarations) {
+    declarations = getAllFunctionDeclarations(root);
+    functionsDeclaredByRoot.set(root, declarations);
+    functionsDeclared = Array.from(functionsDeclaredByRoot.values()).flat();
+  }
+  return declarations;
+}
 
 /**
  * Recursively find all .dat files in the workspace directory.
@@ -308,7 +375,8 @@ function logToFile(message: string) {
 connection.onDefinition(
   async (params: DefinitionParams): Promise<Location | undefined> => {
     const doc = documents.get(params.textDocument.uri);
-    if (!doc || !workspaceRoot) return;
+    const documentRoot = doc ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+    if (!doc || !documentRoot) return;
 
     const lines = doc.getText().split(/\r?\n/);
     const lineText = lines[params.position.line];
@@ -326,7 +394,7 @@ connection.onDefinition(
     
 
     //Search for name as function first
-    const resultFct = await isFunctionDeclared(functionName,"function");
+    const resultFct = await isFunctionDeclared(functionName,"function", undefined, undefined, undefined, undefined, documentRoot);
     if (resultFct!=undefined) {
       return Location.create(resultFct.uri, {
         start: Position.create(resultFct.line, resultFct.startChar),
@@ -338,7 +406,7 @@ connection.onDefinition(
     //Search for name as custom user variable type
     for (const key in structDefinitions) {
       if (key.toLowerCase() === functionName.toLowerCase()) {
-        const resultStruc = await isFunctionDeclared(functionName,"struc");
+        const resultStruc = await isFunctionDeclared(functionName,"struc", undefined, undefined, undefined, undefined, documentRoot);
         if (resultStruc!=undefined) {
           return Location.create(resultStruc.uri, {
             start: Position.create(resultStruc.line, resultStruc.startChar),
@@ -350,9 +418,9 @@ connection.onDefinition(
 
     //Search for name as variable
     let enclosures = findEnclosuresLines(params.position.line, lines);
-    // First, try mergedVariables list
+    const rootVariables = getMergedVariablesForRoot(documentRoot);
     const functionNameLower = functionName.toLowerCase();
-    for (const element of mergedVariables) {
+    for (const element of rootVariables) {
       if (element.name.toLowerCase() === functionNameLower) {
         // First: try local scope (inside enclosures)
         const scopedResult = await isFunctionDeclared(
@@ -361,7 +429,8 @@ connection.onDefinition(
           params.textDocument.uri,
           enclosures.upperLine,
           enclosures.bottomLine,
-          lines.join('\n')
+          lines.join('\n'),
+          documentRoot
         );
 
         if (scopedResult) {
@@ -372,7 +441,7 @@ connection.onDefinition(
         }
 
         // If not found locally, try global search
-        const resultVar = await isFunctionDeclared(functionName, "variable");
+        const resultVar = await isFunctionDeclared(functionName, "variable", undefined, undefined, undefined, undefined, documentRoot);
 
         if (resultVar) {
           return Location.create(resultVar.uri, {
@@ -396,7 +465,8 @@ connection.onDefinition(
 
 connection.onHover(async (params) => {
   const doc = documents.get(params.textDocument.uri);
-  if (!doc || !workspaceRoot) return;
+  const documentRoot = doc ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+  if (!doc || !documentRoot) return;
 
   const lines = doc.getText().split(/\r?\n/);
   const lineText = lines[params.position.line];
@@ -406,7 +476,7 @@ connection.onHover(async (params) => {
   const functionName = getWordAtPosition(lineText, params.position.character)?.word;
   if (!functionName) return;
 
-  const result = await isFunctionDeclared(functionName,"function");
+  const result = await isFunctionDeclared(functionName,"function", undefined, undefined, undefined, undefined, documentRoot);
   if (!result) return;
 
   return {
@@ -426,7 +496,8 @@ connection.onCompletion(async (params: CompletionParams): Promise<CompletionItem
   
   logToFile(logMsg)
   const document = documents.get(params.textDocument.uri);
-  if (!document) return [];
+  const documentRoot = document ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+  if (!document || !documentRoot) return [];
 
   const lines = document.getText().split(/\r?\n/);
 
@@ -466,7 +537,7 @@ connection.onCompletion(async (params: CompletionParams): Promise<CompletionItem
   }
 
   // === 2. Function completions ===
-  const functionItems: CompletionItem[] = functionsDeclared.map(fn => {
+  const functionItems: CompletionItem[] = getFunctionsForRoot(documentRoot).map(fn => {
     const paramList = fn.params.split(',').map(p => p.trim()).filter(Boolean);
     const snippetParams = paramList.map((p, i) => `\${${i + 1}:${p}}`).join(', ');
 
@@ -622,7 +693,8 @@ connection.onDocumentSymbol((params: DocumentSymbolParams): DocumentSymbol[] => 
 // ==================
 connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => {
   const doc = documents.get(params.textDocument.uri);
-  if (!doc || !workspaceRoot) return [];
+  const documentRoot = doc ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+  if (!doc || !documentRoot) return [];
 
   const lines = doc.getText().split(/\r?\n/);
   const lineText = lines[params.position.line];
@@ -634,11 +706,11 @@ connection.onReferences(async (params: ReferenceParams): Promise<Location[]> => 
   if (/^\d/.test(name)) return [];
 
   // KRL is case-insensitive; word boundary keeps "Foo" out of "FooBar"
-  const wordRegex = new RegExp(`\\b${name}\\b`, 'gi');
+  const wordRegex = new RegExp(`\\b${escapeRegExp(name)}\\b`, 'gi');
   const declLineRegex = /^\s*(GLOBAL\s+)?(DEF|DEFFCT|DEFDAT|STRUC|ENUM|DECL|SIGNAL)\b/i;
   const includeDeclaration = params.context.includeDeclaration;
 
-  const files = await findSrcFiles(workspaceRoot);
+  const files = await findSrcFiles(documentRoot);
   const results: Location[] = [];
 
   for (const filePath of files) {
@@ -751,10 +823,11 @@ connection.onFoldingRanges((params: FoldingRangeParams): FoldingRange[] => {
 });
 
 
-async function getAllFunctionDeclarations(): Promise<FunctionDeclaration[]> {
-  if (!workspaceRoot) return [];
+function getAllFunctionDeclarations(rootDir?: string): FunctionDeclaration[] {
+  const searchRoot = rootDir ?? workspaceRoot;
+  if (!searchRoot) return [];
 
-  const files = await findSrcFiles(workspaceRoot);
+  const files = getAllKrlFiles(searchRoot);
   const defRegex = /\b(GLOBAL\s+)?(DEF|DEFFCT)\s+(?:\w+\s+)?(\w+)\s*\(([^)]*)\)/i;
 
   const allDeclarations: FunctionDeclaration[] = [];
@@ -769,7 +842,7 @@ async function getAllFunctionDeclarations(): Promise<FunctionDeclaration[]> {
       if (match) {
         const name = match[3];
         const params = match[4].trim();
-        const startChar = line.indexOf(name);
+        const startChar = indexOfIdentifierIgnoreCase(line, name);
         const uri = URI.file(filePath).toString();
 
         allDeclarations.push({
@@ -889,21 +962,25 @@ async function findSrcFiles(dir: string): Promise<string[]> {
   scopedFilePath?: string,
   lineStart?: number,
   lineEnd?: number,
-  fileContentOverride?: string
+  fileContentOverride?: string,
+  rootOverride?: string
 ): Promise<FunctionDeclaration | undefined> {
-  if (!workspaceRoot) return undefined;
+  const searchRoot = rootOverride ?? (scopedFilePath ? getWorkspaceRootForUri(scopedFilePath) : workspaceRoot);
+  if (!searchRoot) return undefined;
 
+  const escapedName = escapeRegExp(name);
+  const normalizedName = normalizeFunctionName(name);
   const defRegex = mode === "struc"
-    ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:STRUC)\\s+${name}\\b`, 'i')
+    ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:STRUC)\\s+${escapedName}\\b`, 'i')
     : mode === "variable"
-    ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:DECL|SIGNAL)\\b[^\\n]*\\b${name}\\b`, 'i')
+    ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:DECL|SIGNAL)\\b[^\\n]*\\b${escapedName}\\b`, 'i')
     : mode === "function"
-    ? new RegExp(`\\b(GLOBAL\\s+)?(DEF|DEFFCT)\\s+(\\w+\\s+)?${name}\\s*\\(([^)]*)\\)`, 'i')
+    ? /\b(GLOBAL\s+)?(DEF|DEFFCT)\s+(\w+\s+)?(\w+)\s*\(([^)]*)\)/i
     : undefined;
 
   if (!defRegex) return undefined;
 
-  const files = scopedFilePath ? [scopedFilePath] : await findSrcFiles(workspaceRoot);
+  const files = scopedFilePath ? [scopedFilePath] : await findSrcFiles(searchRoot);
 
   for (const filePath of files) {
     const content = fileContentOverride ?? fs.readFileSync(filePath, 'utf8');
@@ -916,18 +993,23 @@ async function findSrcFiles(dir: string): Promise<string[]> {
       const defLine = fileLines[i];
       const match = defLine.match(defRegex);
       if (match) {
+        const declaredName = mode === 'function' ? match[4] : name;
+        if (mode === 'function' && normalizeFunctionName(declaredName) !== normalizedName) {
+          continue;
+        }
+
         const uri = filePath.startsWith("file://") ? filePath : URI.file(filePath).toString();
-        // KRL is case-insensitive — find name regardless of how it's written in the file
-        const startChar = defLine.toLowerCase().indexOf(name.toLowerCase());
-        const params = (mode === 'function' && match[4]) ? match[4].trim() : '';
+        // KRL is case-insensitive; find the actual declaration spelling.
+        const startChar = indexOfIdentifierIgnoreCase(defLine, declaredName);
+        const params = (mode === 'function' && match[5]) ? match[5].trim() : '';
 
         return {
           uri,
           line: i,
           startChar,
-          endChar: startChar + name.length,
+          endChar: startChar + declaredName.length,
           params,
-          name
+          name: declaredName
         };
       }
     }
@@ -1043,7 +1125,8 @@ function validateUndeclaredIdentifiers(document: TextDocument): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
   const lines = document.getText().split(/\r?\n/);
   const declaredNames = getDeclaredNamesForDocument(document);
-  const knownFunctionNames = getKnownFunctionNames(document.getText());
+  const documentRoot = getWorkspaceRootForUri(document.uri);
+  const knownFunctionNames = getKnownFunctionNames(document.getText(), documentRoot);
   const knownStructNames = new Set(Object.keys(structDefinitions).map(name => name.toLowerCase()));
   const keywordNames = new Set(CODE_KEYWORDS.map(keyword => keyword.toUpperCase()));
   const identifierRegex = /\b[A-Za-z_][A-Za-z0-9_]*\b/g;
@@ -1067,7 +1150,7 @@ function validateUndeclaredIdentifiers(document: TextDocument): Diagnostic[] {
       if (isStructInitializerField(code, match.index, name.length)) continue;
       if (keywordNames.has(upperName)) continue;
       if (declaredNames.has(lowerName)) continue;
-      if (knownFunctionNames.has(lowerName)) continue;
+      if (knownFunctionNames.has(normalizeFunctionName(name))) continue;
       if (knownStructNames.has(lowerName)) continue;
 
       const newDiagnostic: Diagnostic = {
@@ -1091,12 +1174,14 @@ function validateUndeclaredIdentifiers(document: TextDocument): Diagnostic[] {
 
 function getDeclaredNamesForDocument(document: TextDocument): Set<string> {
   const declaredNames = new Set<string>();
+  const documentRoot = getWorkspaceRootForUri(document.uri);
 
-  for (const name of getWorkspaceDeclaredNames()) {
+  for (const name of getWorkspaceDeclaredNames(documentRoot)) {
     declaredNames.add(name);
   }
 
-  for (const variable of mergedVariables) {
+  const rootVariables = documentRoot ? getMergedVariablesForRoot(documentRoot) : mergedVariables;
+  for (const variable of rootVariables) {
     declaredNames.add(variable.name.toLowerCase());
   }
 
@@ -1113,18 +1198,20 @@ function getDeclaredNamesForDocument(document: TextDocument): Set<string> {
   return declaredNames;
 }
 
-function getWorkspaceDeclaredNames(): Set<string> {
-  if (workspaceDeclaredNameCache) {
-    return workspaceDeclaredNameCache;
+function getWorkspaceDeclaredNames(root: string | null): Set<string> {
+  const cacheKey = root ?? '';
+  const cached = workspaceDeclaredNameCacheByRoot.get(cacheKey);
+  if (cached) {
+    return cached;
   }
 
   const declaredNames = new Set<string>();
-  if (!workspaceRoot) {
-    workspaceDeclaredNameCache = declaredNames;
+  if (!root) {
+    workspaceDeclaredNameCacheByRoot.set(cacheKey, declaredNames);
     return declaredNames;
   }
 
-  for (const filePath of getAllKrlFiles(workspaceRoot)) {
+  for (const filePath of getAllKrlFiles(root)) {
     const uri = URI.file(filePath).toString();
     const openDocument = documents.get(uri);
     const content = openDocument ? openDocument.getText() : fs.readFileSync(filePath, 'utf8');
@@ -1136,17 +1223,18 @@ function getWorkspaceDeclaredNames(): Set<string> {
     }
   }
 
-  workspaceDeclaredNameCache = declaredNames;
+  workspaceDeclaredNameCacheByRoot.set(cacheKey, declaredNames);
   return declaredNames;
 }
 
-function getKnownFunctionNames(documentText: string): Set<string> {
-  const names = new Set(functionsDeclared.map(fn => fn.name.toLowerCase()));
+function getKnownFunctionNames(documentText: string, root: string | null): Set<string> {
+  const rootFunctions = root ? getFunctionsForRoot(root) : functionsDeclared;
+  const names = new Set(rootFunctions.map(fn => normalizeFunctionName(fn.name)));
   const functionRegex = /\b(?:GLOBAL\s+)?(?:DEF|DEFFCT)\s+(?:\w+\s+)?(\w+)\s*\(/gi;
   let match: RegExpExecArray | null;
 
   while ((match = functionRegex.exec(documentText)) !== null) {
-    names.add(match[1].toLowerCase());
+    names.add(normalizeFunctionName(match[1]));
   }
 
   return names;

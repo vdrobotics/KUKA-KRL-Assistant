@@ -22,7 +22,7 @@ function getValidationConfig() {
     return {
         variableNameLength: cfg.get('validation.variableNameLength', true),
         variableNameSyntax: cfg.get('validation.variableNameSyntax', true),
-        undeclaredIdentifiers: cfg.get('validation.undeclaredIdentifiers', false),
+        undeclaredIdentifiers: cfg.get('validation.undeclaredIdentifiers', true),
         globalUsage: cfg.get('validation.globalUsage', true),
         defdatPublicGlobalRequired: cfg.get('validation.defdatPublicGlobalRequired', true),
         defdatNonPublicGlobalForbidden: cfg.get('validation.defdatNonPublicGlobalForbidden', true),

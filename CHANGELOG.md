@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.8.1] - 2026-05-28
+### Changed
+- `kukaKrl.validation.undeclaredIdentifiers` is now enabled by default and no longer marked experimental. It still emits Information-severity diagnostics for identifiers not found in the current KRL workspace index.
+- Renamed the settings category title from "KUKA KRL Assistant" to "KUKA KRL Edit".
+
+### Fixed
+- Function-name lookup now compares names case-insensitively and ignores whitespace during matching, so `DEF`/`DEFFCT` declarations, hover, go-to-definition, and undeclared-identifier validation use the same KRL-style lookup behavior.
+- Escaped symbol names in reference and declaration lookups before building regular expressions.
+- Multi-root VS Code workspaces now keep function and declaration indexes scoped per workspace folder, preventing similarly structured KRL projects from interfering with each other.
+
+---
+
 ## [1.8.0] - 2026-05-27
 ### Added
 - New `kukaKrl.validation.variableNameSyntax` diagnostic. It reports invalid KRL variable identifiers in declarations, including names that do not start with a letter, names containing unsupported characters, and names that reuse reserved KRL keywords or predefined types.
@@ -25,10 +37,10 @@ All notable changes to this project will be documented in this file.
 ## [1.7.1] - 2026-05-08
 ### Added
 - Four `kukaKrl.validation.*` settings to toggle individual diagnostics on or off, all defaulting to `true`:
-  - `variableNameLength` — 24-character variable name limit (Error)
-  - `globalUsage` — `GLOBAL` keyword usage check (Warning)
-  - `defdatPublicGlobalRequired` — `DEFDAT … PUBLIC` requires `GLOBAL` declarations (Warning)
-  - `defdatNonPublicGlobalForbidden` — non-PUBLIC `DEFDAT` forbids `GLOBAL` declarations (Error)
+  - `variableNameLength` â€” 24-character variable name limit (Error)
+  - `globalUsage` â€” `GLOBAL` keyword usage check (Warning)
+  - `defdatPublicGlobalRequired` â€” `DEFDAT â€¦ PUBLIC` requires `GLOBAL` declarations (Warning)
+  - `defdatNonPublicGlobalForbidden` â€” non-PUBLIC `DEFDAT` forbids `GLOBAL` declarations (Error)
 
   Toggling a setting clears stale diagnostics across open files immediately, no reload required. The two server-side toggles (`defdat*`) are pushed to the language server via a `custom/setValidationConfig` notification.
 
@@ -36,14 +48,14 @@ All notable changes to this project will be documented in this file.
 
 ## [1.7.0] - 2026-05-07
 ### Added
-- Folding ranges for KRL block constructs: `DEF`/`DEFFCT`/`DEFDAT`, `IF`, `LOOP`, `FOR`, `WHILE`, `SWITCH`, `STRUC` and `REPEAT`. Also folds the KUKA-style `;FOLD … ;ENDFOLD` editor blocks that appear in machine-generated code.
-- Recognize uppercase file extensions `.SRC`, `.DAT` and `.SUB` in addition to the lowercase variants — KUKA controllers commonly produce uppercase filenames.
+- Folding ranges for KRL block constructs: `DEF`/`DEFFCT`/`DEFDAT`, `IF`, `LOOP`, `FOR`, `WHILE`, `SWITCH`, `STRUC` and `REPEAT`. Also folds the KUKA-style `;FOLD â€¦ ;ENDFOLD` editor blocks that appear in machine-generated code.
+- Recognize uppercase file extensions `.SRC`, `.DAT` and `.SUB` in addition to the lowercase variants â€” KUKA controllers commonly produce uppercase filenames.
 
 ---
 
 ## [1.6.0] - 2026-05-07
 ### Added
-- Find All References (`Shift+F12`, right-click → "Find All References" / "Go to References", peek view via `Alt+Shift+F12`). Case-insensitive workspace-wide search across `.src`, `.dat` and `.sub` files. Skips line comments, subvariable accesses (`foo.bar`) and system variables (`$foo`, `#foo`). Honors the LSP `includeDeclaration` flag.
+- Find All References (`Shift+F12`, right-click â†’ "Find All References" / "Go to References", peek view via `Alt+Shift+F12`). Case-insensitive workspace-wide search across `.src`, `.dat` and `.sub` files. Skips line comments, subvariable accesses (`foo.bar`) and system variables (`$foo`, `#foo`). Honors the LSP `includeDeclaration` flag.
 
 ---
 
@@ -152,3 +164,4 @@ All notable changes to this project will be documented in this file.
 - Syntax highlighting for KUKA KRL.
 - Basic `Go to Definition` support for function only.
 - Snippet support for KRL keywords.
+

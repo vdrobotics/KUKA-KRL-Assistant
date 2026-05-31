@@ -26,7 +26,7 @@ function getValidationConfig(): ValidationConfig {
   return {
     variableNameLength: cfg.get<boolean>('validation.variableNameLength', true),
     variableNameSyntax: cfg.get<boolean>('validation.variableNameSyntax', true),
-    undeclaredIdentifiers: cfg.get<boolean>('validation.undeclaredIdentifiers', false),
+    undeclaredIdentifiers: cfg.get<boolean>('validation.undeclaredIdentifiers', true),
     globalUsage: cfg.get<boolean>('validation.globalUsage', true),
     defdatPublicGlobalRequired: cfg.get<boolean>('validation.defdatPublicGlobalRequired', true),
     defdatNonPublicGlobalForbidden: cfg.get<boolean>('validation.defdatNonPublicGlobalForbidden', true),

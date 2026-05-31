@@ -20,6 +20,7 @@ const connection = (0, node_1.createConnection)(node_1.ProposedFeatures.all);
 const documents = new node_1.TextDocuments(vscode_languageserver_textdocument_1.TextDocument);
 // Global state variables
 let workspaceRoot = null;
+let workspaceRoots = [];
 const fileVariablesMap = new Map();
 const logFile = path.join(__dirname, 'krl-server.log');
 let logMsg = "";
@@ -27,14 +28,15 @@ let logMsg = "";
 let variableStructTypes = {};
 let structDefinitions = {};
 let functionsDeclared = [];
+let functionsDeclaredByRoot = new Map();
 let mergedVariables = [];
-let workspaceDeclaredNameCache;
+let workspaceDeclaredNameCacheByRoot = new Map();
 // Server-side validation toggles, pushed by the client via 'custom/setValidationConfig'.
 // Defaults match package.json: all checks on.
 const serverValidationConfig = {
     defdatPublicGlobalRequired: true,
     defdatNonPublicGlobalForbidden: true,
-    undeclaredIdentifiers: false,
+    undeclaredIdentifiers: true,
 };
 connection.onNotification('custom/setValidationConfig', (cfg) => {
     if (typeof cfg.defdatPublicGlobalRequired === 'boolean') {
@@ -74,7 +76,12 @@ const CODE_KEYWORDS = [
 // Initialization Handlers
 // =======================
 connection.onInitialize((params) => {
-    workspaceRoot = params.rootUri ? vscode_uri_1.URI.parse(params.rootUri).fsPath : null;
+    var _a, _b, _c;
+    workspaceRoots = (_b = (_a = params.workspaceFolders) === null || _a === void 0 ? void 0 : _a.map(folder => vscode_uri_1.URI.parse(folder.uri).fsPath)) !== null && _b !== void 0 ? _b : [];
+    if (workspaceRoots.length === 0 && params.rootUri) {
+        workspaceRoots = [vscode_uri_1.URI.parse(params.rootUri).fsPath];
+    }
+    workspaceRoot = (_c = workspaceRoots[0]) !== null && _c !== void 0 ? _c : null;
     // Debug: Delete old log file if exists
     if (fs.existsSync(logFile)) {
         fs.unlinkSync(logFile);
@@ -98,34 +105,28 @@ connection.onInitialize((params) => {
     };
 });
 connection.onInitialized(() => __awaiter(void 0, void 0, void 0, function* () {
-    if (!workspaceRoot)
+    if (workspaceRoots.length === 0)
         return;
-    const files = getAllDatFiles(workspaceRoot);
-    // Step 1: Collect variables from all .dat files
-    for (const filePath of files) {
-        const content = fs.readFileSync(filePath, 'utf8');
-        const uri = vscode_uri_1.URI.file(filePath).toString();
-        const collector = new DeclaredVariableCollector();
-        collector.extractFromText(content);
-        fileVariablesMap.set(uri, collector.getVariables());
-        functionsDeclared = yield getAllFunctionDeclarations();
-        //logToFile(`Extracted functions from : ${JSON.stringify(functionsDeclared, null, 2)}`);
+    for (const root of workspaceRoots) {
+        const files = getAllDatFiles(root);
+        for (const filePath of files) {
+            const content = fs.readFileSync(filePath, 'utf8');
+            const uri = vscode_uri_1.URI.file(filePath).toString();
+            const collector = new DeclaredVariableCollector();
+            collector.extractFromText(content);
+            fileVariablesMap.set(uri, collector.getVariables());
+        }
+        functionsDeclaredByRoot.set(root, getAllFunctionDeclarations(root));
     }
-    // Step 2: Merge and log variables for all files
+    functionsDeclared = Array.from(functionsDeclaredByRoot.values()).flat();
     mergedVariables = mergeAllVariables(fileVariablesMap);
-    //logToFile(`Merged variables: ${JSON.stringify(mergedVariables, null, 2)}`);
-    // Step 3: Optionally validate each file with merged variables (commented out)
-    for (const filePath of files) {
-        const content = fs.readFileSync(filePath, 'utf8');
-        const uri = vscode_uri_1.URI.file(filePath).toString();
-    }
 }));
 // ==========================
 // Document Change Event Hook
 // ==========================
 documents.onDidChangeContent((change) => __awaiter(void 0, void 0, void 0, function* () {
     const { document } = change;
-    workspaceDeclaredNameCache = undefined;
+    invalidateWorkspaceCachesForDocument(document.uri);
     extractStrucVariables(document.getText());
     const collector = new DeclaredVariableCollector();
     collector.extractFromText(document.getText());
@@ -138,7 +139,7 @@ documents.onDidChangeContent((change) => __awaiter(void 0, void 0, void 0, funct
 }));
 documents.onDidOpen(change => {
     const { document } = change;
-    workspaceDeclaredNameCache = undefined;
+    invalidateWorkspaceCachesForDocument(document.uri);
     const collector = new DeclaredVariableCollector();
     collector.extractFromText(document.getText());
     fileVariablesMap.set(document.uri, collector.getVariables());
@@ -150,6 +151,65 @@ documents.onDidOpen(change => {
 // ===================
 // File and Variables Utilities
 // ===================
+function normalizeFunctionName(name) {
+    return name.replace(/\s+/g, '').toLowerCase();
+}
+function indexOfIdentifierIgnoreCase(text, identifier) {
+    return text.toLowerCase().indexOf(identifier.toLowerCase());
+}
+function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function getWorkspaceRootForUri(uri) {
+    var _a;
+    let fsPath;
+    try {
+        fsPath = vscode_uri_1.URI.parse(uri).fsPath;
+    }
+    catch (_b) {
+        fsPath = uri;
+    }
+    const roots = workspaceRoots.length > 0 ? workspaceRoots : (workspaceRoot ? [workspaceRoot] : []);
+    const matchingRoots = roots.filter(root => isPathInsideOrEqual(fsPath, root));
+    matchingRoots.sort((a, b) => b.length - a.length);
+    return (_a = matchingRoots[0]) !== null && _a !== void 0 ? _a : workspaceRoot;
+}
+function isPathInsideOrEqual(filePath, rootPath) {
+    const resolvedFile = path.resolve(filePath).toLowerCase();
+    const resolvedRoot = path.resolve(rootPath).toLowerCase();
+    const relative = path.relative(resolvedRoot, resolvedFile);
+    return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+}
+function invalidateWorkspaceCachesForDocument(uri) {
+    const root = getWorkspaceRootForUri(uri);
+    if (!root) {
+        workspaceDeclaredNameCacheByRoot.clear();
+        functionsDeclaredByRoot.clear();
+        functionsDeclared = [];
+        return;
+    }
+    workspaceDeclaredNameCacheByRoot.delete(root);
+    functionsDeclaredByRoot.set(root, getAllFunctionDeclarations(root));
+    functionsDeclared = Array.from(functionsDeclaredByRoot.values()).flat();
+}
+function getMergedVariablesForRoot(root) {
+    const scopedMap = new Map();
+    for (const [uri, variables] of fileVariablesMap.entries()) {
+        if (getWorkspaceRootForUri(uri) === root) {
+            scopedMap.set(uri, variables);
+        }
+    }
+    return mergeAllVariables(scopedMap);
+}
+function getFunctionsForRoot(root) {
+    let declarations = functionsDeclaredByRoot.get(root);
+    if (!declarations) {
+        declarations = getAllFunctionDeclarations(root);
+        functionsDeclaredByRoot.set(root, declarations);
+        functionsDeclared = Array.from(functionsDeclaredByRoot.values()).flat();
+    }
+    return declarations;
+}
 /**
  * Recursively find all .dat files in the workspace directory.
  */
@@ -217,7 +277,8 @@ function logToFile(message) {
 connection.onDefinition((params) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const doc = documents.get(params.textDocument.uri);
-    if (!doc || !workspaceRoot)
+    const documentRoot = doc ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+    if (!doc || !documentRoot)
         return;
     const lines = doc.getText().split(/\r?\n/);
     const lineText = lines[params.position.line];
@@ -232,7 +293,7 @@ connection.onDefinition((params) => __awaiter(void 0, void 0, void 0, function* 
     if (!functionName)
         return;
     //Search for name as function first
-    const resultFct = yield isFunctionDeclared(functionName, "function");
+    const resultFct = yield isFunctionDeclared(functionName, "function", undefined, undefined, undefined, undefined, documentRoot);
     if (resultFct != undefined) {
         return node_1.Location.create(resultFct.uri, {
             start: node_1.Position.create(resultFct.line, resultFct.startChar),
@@ -242,7 +303,7 @@ connection.onDefinition((params) => __awaiter(void 0, void 0, void 0, function* 
     //Search for name as custom user variable type
     for (const key in structDefinitions) {
         if (key.toLowerCase() === functionName.toLowerCase()) {
-            const resultStruc = yield isFunctionDeclared(functionName, "struc");
+            const resultStruc = yield isFunctionDeclared(functionName, "struc", undefined, undefined, undefined, undefined, documentRoot);
             if (resultStruc != undefined) {
                 return node_1.Location.create(resultStruc.uri, {
                     start: node_1.Position.create(resultStruc.line, resultStruc.startChar),
@@ -253,12 +314,12 @@ connection.onDefinition((params) => __awaiter(void 0, void 0, void 0, function* 
     }
     //Search for name as variable
     let enclosures = findEnclosuresLines(params.position.line, lines);
-    // First, try mergedVariables list
+    const rootVariables = getMergedVariablesForRoot(documentRoot);
     const functionNameLower = functionName.toLowerCase();
-    for (const element of mergedVariables) {
+    for (const element of rootVariables) {
         if (element.name.toLowerCase() === functionNameLower) {
             // First: try local scope (inside enclosures)
-            const scopedResult = yield isFunctionDeclared(functionName, "variable", params.textDocument.uri, enclosures.upperLine, enclosures.bottomLine, lines.join('\n'));
+            const scopedResult = yield isFunctionDeclared(functionName, "variable", params.textDocument.uri, enclosures.upperLine, enclosures.bottomLine, lines.join('\n'), documentRoot);
             if (scopedResult) {
                 return node_1.Location.create(scopedResult.uri, {
                     start: node_1.Position.create(scopedResult.line, scopedResult.startChar),
@@ -266,7 +327,7 @@ connection.onDefinition((params) => __awaiter(void 0, void 0, void 0, function* 
                 });
             }
             // If not found locally, try global search
-            const resultVar = yield isFunctionDeclared(functionName, "variable");
+            const resultVar = yield isFunctionDeclared(functionName, "variable", undefined, undefined, undefined, undefined, documentRoot);
             if (resultVar) {
                 return node_1.Location.create(resultVar.uri, {
                     start: node_1.Position.create(resultVar.line, resultVar.startChar),
@@ -283,7 +344,8 @@ connection.onDefinition((params) => __awaiter(void 0, void 0, void 0, function* 
 connection.onHover((params) => __awaiter(void 0, void 0, void 0, function* () {
     var _c;
     const doc = documents.get(params.textDocument.uri);
-    if (!doc || !workspaceRoot)
+    const documentRoot = doc ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+    if (!doc || !documentRoot)
         return;
     const lines = doc.getText().split(/\r?\n/);
     const lineText = lines[params.position.line];
@@ -292,7 +354,7 @@ connection.onHover((params) => __awaiter(void 0, void 0, void 0, function* () {
     const functionName = (_c = getWordAtPosition(lineText, params.position.character)) === null || _c === void 0 ? void 0 : _c.word;
     if (!functionName)
         return;
-    const result = yield isFunctionDeclared(functionName, "function");
+    const result = yield isFunctionDeclared(functionName, "function", undefined, undefined, undefined, undefined, documentRoot);
     if (!result)
         return;
     return {
@@ -310,7 +372,8 @@ connection.onCompletion((params) => __awaiter(void 0, void 0, void 0, function* 
     logMsg = `On completion is called`;
     logToFile(logMsg);
     const document = documents.get(params.textDocument.uri);
-    if (!document)
+    const documentRoot = document ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+    if (!document || !documentRoot)
         return [];
     const lines = document.getText().split(/\r?\n/);
     // === 1. Struct field completions ===
@@ -342,7 +405,7 @@ connection.onCompletion((params) => __awaiter(void 0, void 0, void 0, function* 
         return structItems;
     }
     // === 2. Function completions ===
-    const functionItems = functionsDeclared.map(fn => {
+    const functionItems = getFunctionsForRoot(documentRoot).map(fn => {
         const paramList = fn.params.split(',').map(p => p.trim()).filter(Boolean);
         const snippetParams = paramList.map((p, i) => `\${${i + 1}:${p}}`).join(', ');
         return {
@@ -465,7 +528,8 @@ connection.onDocumentSymbol((params) => {
 // ==================
 connection.onReferences((params) => __awaiter(void 0, void 0, void 0, function* () {
     const doc = documents.get(params.textDocument.uri);
-    if (!doc || !workspaceRoot)
+    const documentRoot = doc ? getWorkspaceRootForUri(params.textDocument.uri) : null;
+    if (!doc || !documentRoot)
         return [];
     const lines = doc.getText().split(/\r?\n/);
     const lineText = lines[params.position.line];
@@ -477,10 +541,10 @@ connection.onReferences((params) => __awaiter(void 0, void 0, void 0, function* 
     if (/^\d/.test(name))
         return [];
     // KRL is case-insensitive; word boundary keeps "Foo" out of "FooBar"
-    const wordRegex = new RegExp(`\\b${name}\\b`, 'gi');
+    const wordRegex = new RegExp(`\\b${escapeRegExp(name)}\\b`, 'gi');
     const declLineRegex = /^\s*(GLOBAL\s+)?(DEF|DEFFCT|DEFDAT|STRUC|ENUM|DECL|SIGNAL)\b/i;
     const includeDeclaration = params.context.includeDeclaration;
-    const files = yield findSrcFiles(workspaceRoot);
+    const files = yield findSrcFiles(documentRoot);
     const results = [];
     for (const filePath of files) {
         const uri = vscode_uri_1.URI.file(filePath).toString();
@@ -577,37 +641,36 @@ connection.onFoldingRanges((params) => {
     }
     return ranges;
 });
-function getAllFunctionDeclarations() {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (!workspaceRoot)
-            return [];
-        const files = yield findSrcFiles(workspaceRoot);
-        const defRegex = /\b(GLOBAL\s+)?(DEF|DEFFCT)\s+(?:\w+\s+)?(\w+)\s*\(([^)]*)\)/i;
-        const allDeclarations = [];
-        for (const filePath of files) {
-            const content = fs.readFileSync(filePath, 'utf8');
-            const fileLines = content.split(/\r?\n/);
-            for (let i = 0; i < fileLines.length; i++) {
-                const line = fileLines[i];
-                const match = defRegex.exec(line);
-                if (match) {
-                    const name = match[3];
-                    const params = match[4].trim();
-                    const startChar = line.indexOf(name);
-                    const uri = vscode_uri_1.URI.file(filePath).toString();
-                    allDeclarations.push({
-                        name,
-                        uri,
-                        line: i,
-                        startChar,
-                        endChar: startChar + name.length,
-                        params,
-                    });
-                }
+function getAllFunctionDeclarations(rootDir) {
+    const searchRoot = rootDir !== null && rootDir !== void 0 ? rootDir : workspaceRoot;
+    if (!searchRoot)
+        return [];
+    const files = getAllKrlFiles(searchRoot);
+    const defRegex = /\b(GLOBAL\s+)?(DEF|DEFFCT)\s+(?:\w+\s+)?(\w+)\s*\(([^)]*)\)/i;
+    const allDeclarations = [];
+    for (const filePath of files) {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const fileLines = content.split(/\r?\n/);
+        for (let i = 0; i < fileLines.length; i++) {
+            const line = fileLines[i];
+            const match = defRegex.exec(line);
+            if (match) {
+                const name = match[3];
+                const params = match[4].trim();
+                const startChar = indexOfIdentifierIgnoreCase(line, name);
+                const uri = vscode_uri_1.URI.file(filePath).toString();
+                allDeclarations.push({
+                    name,
+                    uri,
+                    line: i,
+                    startChar,
+                    endChar: startChar + name.length,
+                    params,
+                });
             }
         }
-        return allDeclarations;
-    });
+    }
+    return allDeclarations;
 }
 // =========================
 // Utility Functions
@@ -688,20 +751,23 @@ function findSrcFiles(dir) {
 }
 /**
  * Check if a function with given name is declared in any source file.
- */ function isFunctionDeclared(name, mode, scopedFilePath, lineStart, lineEnd, fileContentOverride) {
+ */ function isFunctionDeclared(name, mode, scopedFilePath, lineStart, lineEnd, fileContentOverride, rootOverride) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!workspaceRoot)
+        const searchRoot = rootOverride !== null && rootOverride !== void 0 ? rootOverride : (scopedFilePath ? getWorkspaceRootForUri(scopedFilePath) : workspaceRoot);
+        if (!searchRoot)
             return undefined;
+        const escapedName = escapeRegExp(name);
+        const normalizedName = normalizeFunctionName(name);
         const defRegex = mode === "struc"
-            ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:STRUC)\\s+${name}\\b`, 'i')
+            ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:STRUC)\\s+${escapedName}\\b`, 'i')
             : mode === "variable"
-                ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:DECL|SIGNAL)\\b[^\\n]*\\b${name}\\b`, 'i')
+                ? new RegExp(`\\b(?:GLOBAL\\s+)?(?:DECL|SIGNAL)\\b[^\\n]*\\b${escapedName}\\b`, 'i')
                 : mode === "function"
-                    ? new RegExp(`\\b(GLOBAL\\s+)?(DEF|DEFFCT)\\s+(\\w+\\s+)?${name}\\s*\\(([^)]*)\\)`, 'i')
+                    ? /\b(GLOBAL\s+)?(DEF|DEFFCT)\s+(\w+\s+)?(\w+)\s*\(([^)]*)\)/i
                     : undefined;
         if (!defRegex)
             return undefined;
-        const files = scopedFilePath ? [scopedFilePath] : yield findSrcFiles(workspaceRoot);
+        const files = scopedFilePath ? [scopedFilePath] : yield findSrcFiles(searchRoot);
         for (const filePath of files) {
             const content = fileContentOverride !== null && fileContentOverride !== void 0 ? fileContentOverride : fs.readFileSync(filePath, 'utf8');
             const fileLines = content.split(/\r?\n/);
@@ -711,17 +777,21 @@ function findSrcFiles(dir) {
                 const defLine = fileLines[i];
                 const match = defLine.match(defRegex);
                 if (match) {
+                    const declaredName = mode === 'function' ? match[4] : name;
+                    if (mode === 'function' && normalizeFunctionName(declaredName) !== normalizedName) {
+                        continue;
+                    }
                     const uri = filePath.startsWith("file://") ? filePath : vscode_uri_1.URI.file(filePath).toString();
-                    // KRL is case-insensitive — find name regardless of how it's written in the file
-                    const startChar = defLine.toLowerCase().indexOf(name.toLowerCase());
-                    const params = (mode === 'function' && match[4]) ? match[4].trim() : '';
+                    // KRL is case-insensitive; find the actual declaration spelling.
+                    const startChar = indexOfIdentifierIgnoreCase(defLine, declaredName);
+                    const params = (mode === 'function' && match[5]) ? match[5].trim() : '';
                     return {
                         uri,
                         line: i,
                         startChar,
-                        endChar: startChar + name.length,
+                        endChar: startChar + declaredName.length,
                         params,
-                        name
+                        name: declaredName
                     };
                 }
             }
@@ -820,7 +890,8 @@ function validateUndeclaredIdentifiers(document) {
     const diagnostics = [];
     const lines = document.getText().split(/\r?\n/);
     const declaredNames = getDeclaredNamesForDocument(document);
-    const knownFunctionNames = getKnownFunctionNames(document.getText());
+    const documentRoot = getWorkspaceRootForUri(document.uri);
+    const knownFunctionNames = getKnownFunctionNames(document.getText(), documentRoot);
     const knownStructNames = new Set(Object.keys(structDefinitions).map(name => name.toLowerCase()));
     const keywordNames = new Set(CODE_KEYWORDS.map(keyword => keyword.toUpperCase()));
     const identifierRegex = /\b[A-Za-z_][A-Za-z0-9_]*\b/g;
@@ -846,7 +917,7 @@ function validateUndeclaredIdentifiers(document) {
                 continue;
             if (declaredNames.has(lowerName))
                 continue;
-            if (knownFunctionNames.has(lowerName))
+            if (knownFunctionNames.has(normalizeFunctionName(name)))
                 continue;
             if (knownStructNames.has(lowerName))
                 continue;
@@ -868,10 +939,12 @@ function validateUndeclaredIdentifiers(document) {
 }
 function getDeclaredNamesForDocument(document) {
     const declaredNames = new Set();
-    for (const name of getWorkspaceDeclaredNames()) {
+    const documentRoot = getWorkspaceRootForUri(document.uri);
+    for (const name of getWorkspaceDeclaredNames(documentRoot)) {
         declaredNames.add(name);
     }
-    for (const variable of mergedVariables) {
+    const rootVariables = documentRoot ? getMergedVariablesForRoot(documentRoot) : mergedVariables;
+    for (const variable of rootVariables) {
         declaredNames.add(variable.name.toLowerCase());
     }
     const collector = new DeclaredVariableCollector();
@@ -884,16 +957,18 @@ function getDeclaredNamesForDocument(document) {
     }
     return declaredNames;
 }
-function getWorkspaceDeclaredNames() {
-    if (workspaceDeclaredNameCache) {
-        return workspaceDeclaredNameCache;
+function getWorkspaceDeclaredNames(root) {
+    const cacheKey = root !== null && root !== void 0 ? root : '';
+    const cached = workspaceDeclaredNameCacheByRoot.get(cacheKey);
+    if (cached) {
+        return cached;
     }
     const declaredNames = new Set();
-    if (!workspaceRoot) {
-        workspaceDeclaredNameCache = declaredNames;
+    if (!root) {
+        workspaceDeclaredNameCacheByRoot.set(cacheKey, declaredNames);
         return declaredNames;
     }
-    for (const filePath of getAllKrlFiles(workspaceRoot)) {
+    for (const filePath of getAllKrlFiles(root)) {
         const uri = vscode_uri_1.URI.file(filePath).toString();
         const openDocument = documents.get(uri);
         const content = openDocument ? openDocument.getText() : fs.readFileSync(filePath, 'utf8');
@@ -903,15 +978,16 @@ function getWorkspaceDeclaredNames() {
             declaredNames.add(variable.name.toLowerCase());
         }
     }
-    workspaceDeclaredNameCache = declaredNames;
+    workspaceDeclaredNameCacheByRoot.set(cacheKey, declaredNames);
     return declaredNames;
 }
-function getKnownFunctionNames(documentText) {
-    const names = new Set(functionsDeclared.map(fn => fn.name.toLowerCase()));
+function getKnownFunctionNames(documentText, root) {
+    const rootFunctions = root ? getFunctionsForRoot(root) : functionsDeclared;
+    const names = new Set(rootFunctions.map(fn => normalizeFunctionName(fn.name)));
     const functionRegex = /\b(?:GLOBAL\s+)?(?:DEF|DEFFCT)\s+(?:\w+\s+)?(\w+)\s*\(/gi;
     let match;
     while ((match = functionRegex.exec(documentText)) !== null) {
-        names.add(match[1].toLowerCase());
+        names.add(normalizeFunctionName(match[1]));
     }
     return names;
 }
